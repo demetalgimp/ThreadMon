@@ -1,11 +1,22 @@
 //editor: tab=4
+/*
+ * String.cpp
+ *
+ *  Created on: Dec 28, 2024
+ *      Author: swalton
+ */
+#include <stdlib.h>
 #include <string>
+#include <sstream>
 #include "String.hpp"
 
 	void TextAccumulator::resizeBy(uint increment) {
 		if ( position + increment >= current_size ) {
 			current_size += increment + BUFFER_SIZE_INC;
 			buffer = reinterpret_cast<char*>(realloc(buffer, current_size + 1));
+			if ( buffer == nullptr ) {
+				abort();
+			}
 		}
 	}
 
@@ -135,6 +146,9 @@
 		if ( new_size > size ) {
 			size = new_size + BUFFER_SIZE_INC;
 			buffer = reinterpret_cast<char*>(realloc(buffer, size + 1));
+			if ( buffer == nullptr ) {
+				abort();
+			}
 //			char *tmps = new char[size + 1];
 //			strncpy(tmps, buffer, length + 1);
 //			delete [] buffer;

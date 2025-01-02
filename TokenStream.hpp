@@ -1,4 +1,11 @@
 //editor: tab=4
+/*
+ * TokenStream.hpp
+ *
+ *  Created on: Dec 28, 2024
+ *      Author: swalton
+ */
+
 #ifndef __TOKEN_STREAM__
 #define __TOKEN_STREAM__
 
@@ -6,9 +13,14 @@
 #include <vector>
 #include <map>
 #include <set>
+
+#include "Token.hpp"
 #include "Stream.hpp"
+#include "StringStream.hpp"
 
 	class TokenStream: public Klass {
+		friend class UnitTests;
+
 		protected:
 			Stream *stream;
 			Token current_token;
@@ -18,7 +30,7 @@
 /**/		TokenStream(const String& string): stream(new StringStream(string)) {}
 /**/		virtual ~TokenStream(void) { delete stream; }
 
-//		protected:
+		protected:
 /**/		virtual String scoopSpace(void);
 /**/		virtual Token  scoopWord(const String& spaces);
 /**/		virtual void   scoopDigits(TextAccumulator& acc);
@@ -26,14 +38,27 @@
 /**/		virtual Token  scoopString(const String& spaces);
 
 		public:
-/**/		virtual bool  isEOF(void) { return (stream->isEOF()  ||  current_token.type == eEOF); }
 /**/		virtual Token current(void);
 /**/		virtual Token next(void);
+/**/		virtual void setBookmark(void) 				{ stream->setBookmark(); }
+
+//NOTE: TokenStream::recallBookmark() differs from the Stream::recallBookmark().
+//		Stream's current() after recallBookmark() returns the *last* letter.
+//		TokenStream's current() after recallBookmark() returns the *current* token.
+//	REASON: TokenStream's index into the stream is updated with at _least_ one character. Tracking the _last_
+//		index introduces more complexity than useful.
+/**/		virtual void recallBookmark(void)			{ stream->recallBookmark(); current_token.type = eEmpty; }
+			virtual Token mustBe(const std::set<Token>& tokens);
+			virtual Token mustBe(const Token& token);
+			virtual Token mayBe(const std::set<Token>& tokens);
+			virtual Token mayBe(const Token& token);
+//BROKEN!
 //			virtual void setStream(Stream *stream) {
 //				delete stream;
 //				this->stream = stream;
 //				current_token = Token();
 //			}
+/**/		virtual bool  isEOF(void) 					{ return (stream->isEOF()  ||  current_token.type == eEOF); }
 
 		public: //--- Klass overrides
 /**/		virtual cchar* getChars(void) const override { return "TokenStream"; }
@@ -41,54 +66,6 @@
 
 		public:
 /**/friend 	std::ostream& operator<<(std::ostream& stream, const TokenStream& tokens);
-	};
-
-	class CppTokenStream: public TokenStream {
-		public:
-/**/		CppTokenStream(Stream *stream): TokenStream(stream) {}
-
-		public: //--- TokenStream overrides
-/**/		virtual String scoopSpace(void) override;
-/**/		virtual Token  scoopNumber(const String& spaces) override;
-/**/		virtual Token  scoopWord(const String& spaces) override;
-
-		public: //--- TokenStream overrides
-/**/		virtual Token  next(void);
-
-		public: //--- Klass overrides
-			virtual String toString(void) const override;
-	};
-
-	class XmlTokenStream: public TokenStream {
-		public:
-/**/		XmlTokenStream(Stream *stream): TokenStream(stream) {}
-/**/		XmlTokenStream(const String& text): TokenStream(new StringStream(text)) {}
-
-		protected:
-/**/		virtual String scoopSpace(void) override;
-/**/		virtual Token  scoopTag(const String& spaces);
-/**/		virtual Token  scoopString(const String& spaces) override;
-/**/		virtual Token  scoopNumber(const String& spaces) override { return Token(); }
-
-		public:
-/**/		virtual Token  next(void) override;
-			virtual String toString(void) const override { return "XmlTokenStream"; }
-	};
-
-	class TagTokenStream: public TokenStream {
-		public:
-/**/		TagTokenStream(Stream *stream): TokenStream(stream) {}
-/**/		TagTokenStream(const String& string): TokenStream(new StringStream(string)) {}
-
-		public:
-/**/		virtual Token next(void) override;
-			void mustBe(const std::set<Token>& tokens);
-			void mustBe(const Token& token);
-			bool mayBe(const std::set<Token>& tokens);
-			bool mayBe(const Token& token);
-
-		public:
-			virtual String toString(void) const override { return "TagTokenStream"; }
 	};
 
 #endif
