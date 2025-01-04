@@ -17,43 +17,23 @@
 		friend class UnitTests;
 
 		public:
-/**/		XmlTokenStream(Stream *stream): TokenStream(stream) {}
-/**/		XmlTokenStream(const String& text): TokenStream(new StringStream(text)) {}
+/*tested*/	XmlTokenStream(Stream *stream): TokenStream(stream) {}
+/*tested*/	XmlTokenStream(const String& text): TokenStream(new StringStream(text)) {}
 
 
 		protected:
-/**/		virtual String scoopSpace(void) override;
-/**/		virtual Token  scoopTag(const String& spaces);
-/**/		virtual Token  scoopString(const String& spaces) override;
-/**/		virtual Token  scoopNumber(const String& spaces) override { return Token(); }
+/*tested*/	virtual String scoopSpace(void) override;
+/*tested*/	virtual Token  scoopTag(const String& spaces);
+/*tested*/	virtual Token  scoopString(const String& spaces) override;
+/*tested*/	virtual Token  scoopNumber(const String& spaces) override { return Token(); }
 
 		public:
-/**/		virtual Token  next(void) override;
-			virtual String toString(void) const override { return "XmlTokenStream: " + TokenStream::toString(); }
+/*tested*/	virtual Token  next(void) override;
+/*??*/		virtual Klass *clone(void) const				{ return new XmlTokenStream(*this); }
+/*??*/		virtual String toString(void) const override	{ return "XmlTokenStream: " + TokenStream::toString(); }
 
 		public:
-/**/friend 	std::ostream& operator<<(std::ostream& stream, const XmlTokenStream& tokens);
+/*tested*/	friend std::ostream& operator<<(std::ostream& stream, const XmlTokenStream& tokens);
 	};
-
-//	class XmlTagTokenStream: public TokenStream {
-//		friend class UnitTests;
-//
-//		public:
-///**/		XmlTagTokenStream(Stream *stream): TokenStream(stream) {}
-///**/		XmlTagTokenStream(const String& string): TokenStream(new StringStream(string)) {}
-//
-//		public:
-///**/		virtual Token next(void) override;
-///**/		void mustBe(const std::set<Token>& tokens);
-///**/		void mustBe(const Token& token);
-///**/		bool mayBe(const std::set<Token>& tokens);
-///**/		bool mayBe(const Token& token);
-//
-//		public:
-//			virtual String toString(void) const override { return "XmlTagTokenStream: " + TokenStream::toString(); }
-//
-//		public:
-//			friend 	std::ostream& operator<<(std::ostream& stream, const XmlTokenStream& tokens);
-//	};
 
 #endif /* XMLTOKENSTREAM_HPP_ */

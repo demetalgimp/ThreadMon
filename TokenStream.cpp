@@ -96,6 +96,10 @@
 		} else if ( Token::isWordStart(c) ) {
 			current_token = scoopWord(spaces);
 
+		} else if ( c == '"'  ||  c == '\'' ) {
+			current_token = scoopString(spaces);
+			current_token.type = TokenType::eString;
+
 		} else {
 			current_token = Token((TokenType)c);
 			stream->next();
@@ -112,7 +116,6 @@
 	}
 
 	Token TokenStream::mustBe(const std::set<Token>& tokens) {
-//		String spaces = scoopSpace();
 		Token token = current();
 		if ( token == TokenType::eEOF  ||  tokens.find(token) == tokens.end() ) {
 			THROW_ERROR("malformed XML tag[line#%d]: expecting '<' but instead got %c (0x%2X)", stream->getLineNumber(), stream->current(), stream->current());
@@ -122,7 +125,6 @@
 	}
 
 	Token TokenStream::mustBe(const Token& expected_token) {
-//		String spaces = scoopSpace();
 		Token token = current();
 		if ( expected_token != token.type ) {
 			THROW_ERROR("malformed XML tag[line#%d]: expecting '<' but instead got %c (0x%2X)", stream->getLineNumber(), stream->current(), stream->current());
@@ -132,7 +134,6 @@
 	}
 
 	Token TokenStream::mayBe(const std::set<Token>& tokens) {
-//		String spaces = scoopSpace();
 		Token token = current();
 		if ( tokens.find(token) != tokens.end() ) {
 			next();
@@ -142,7 +143,6 @@
 	}
 
 	Token TokenStream::mayBe(const Token& expected_token) {
-//		String spaces = scoopSpace();
 		Token token = current();
 		if ( expected_token == token.type ) {
 			next();

@@ -75,6 +75,7 @@ uint tests_that_failed = 0;
 		output << var;
 		return output.str();
 	}
+
 	static void IAS_unittest_equals(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, auto output_to_test, auto expected) {
 		test_number++;
 
@@ -106,21 +107,21 @@ uint tests_that_failed = 0;
 		}
 	}
 
-#define PASS()  	{ \
+#define PASS() { \
 		const char *usecase_file = __FILE__; \
 		const char *usecase_method = __FUNCTION__; \
 		uint usecase_lineno = __LINE__; \
 		IAS_pass(usecase_file, usecase_method, usecase_lineno); \
 	}
 
-#define FAIL(MSG)  	{ \
+#define FAIL(MSG) { \
 		const char *usecase_file = __FILE__; \
 		const char *usecase_method = __FUNCTION__; \
 		uint usecase_lineno = __LINE__; \
 		IAS_fail(usecase_file, usecase_method, usecase_lineno, MSG); \
 	}
 
-#define UNITTEST(TO_TEST) 	{ \
+#define UNITTEST(TO_TEST) { \
 			const char *usecase_file = __FILE__; \
 			const char *usecase_method = __FUNCTION__; \
 			uint usecase_lineno = __LINE__; \
@@ -148,10 +149,10 @@ uint tests_that_failed = 0;
 //=== class TextAccumulator =========================================================================================================================
 	void UnitTests::test_TextAccumulator(void) {
 	//---	TextAccumulator(void) {}
-		{	TextAccumulator ac;
-			UNITTEST_EQUALS(ac.getLength(), 0u);
+		{	TextAccumulator acc;
+			UNITTEST_EQUALS(acc.getLength(), 0u);
 			try {
-				ac[0];
+				acc[0];
 				FAIL("Should have thrown!");
 			} catch ( const String& string ) {
 				PASS();
@@ -159,110 +160,112 @@ uint tests_that_failed = 0;
 		}
 
 	//---	TextAccumulator& operator+=(char c);
-		{	TextAccumulator ac;
-			ac += 'a';
-			UNITTEST_EQUALS(ac.toString(), "a");
-			UNITTEST_EQUALS(ac.getLength(), 1u);
+		{	TextAccumulator acc;
+			acc += 'a';
+			UNITTEST_EQUALS(acc.toString(), "a");
+			UNITTEST_EQUALS(acc.getLength(), 1u);
 
-			ac += 'b';
-			UNITTEST_EQUALS(ac.toString(), "ab");
-			UNITTEST_EQUALS(ac.getLength(), 2u);
+			acc += 'b';
+			UNITTEST_EQUALS(acc.toString(), "ab");
+			UNITTEST_EQUALS(acc.getLength(), 2u);
 
-			ac.operator+=('c').operator+=('d').operator+=('e');
-			UNITTEST_EQUALS(ac.toString(), "abcde");
-			UNITTEST_EQUALS(ac.getLength(), 5u);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC);
+			acc.operator+=('c').operator+=('d').operator+=('e');
+			UNITTEST_EQUALS(acc.toString(), "abcde");
+			UNITTEST_EQUALS(acc.getLength(), 5u);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC);
 
-			UNITTEST_EQUALS(ac[0], 'a');
-			UNITTEST_EQUALS(ac[4], 'e');
+			UNITTEST_EQUALS(acc[0], 'a');
+			UNITTEST_EQUALS(acc[4], 'e');
 			try {
-				ac[5];
+				acc[5];
 				FAIL("Should have thrown!");
 			} catch ( const String& string ) {
 				PASS();
 			}
 		}
-		{	TextAccumulator ac;
+		{	TextAccumulator acc;
 			for ( int i = 0; i < 1024 - 1; i++) {
-				ac += 'a';
+				acc += 'a';
 			}
-			UNITTEST_EQUALS(ac.getLength(), TextAccumulator::BUFFER_SIZE_INC - 1);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC);
-			ac += 'Z';
-			UNITTEST_EQUALS(ac.getLength(), TextAccumulator::BUFFER_SIZE_INC);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 1);
+			UNITTEST_EQUALS(acc.getLength(), TextAccumulator::BUFFER_SIZE_INC - 1);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC);
+			acc += 'Z';
+			UNITTEST_EQUALS(acc.getLength(), TextAccumulator::BUFFER_SIZE_INC);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 1);
 		}
 
 	//---	TextAccumulator& operator+=(const char *str)
-		{	TextAccumulator ac;
+		{	TextAccumulator acc;
 			for ( int i = 0; i < 1024 - 1; i++) {
-				ac += "a";
+				acc += "a";
 			}
-			UNITTEST_EQUALS(ac.getLength(), TextAccumulator::BUFFER_SIZE_INC - 1);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC);
-			ac += "Z";
-			UNITTEST_EQUALS(ac.getLength(), TextAccumulator::BUFFER_SIZE_INC);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 1);
+			UNITTEST_EQUALS(acc.getLength(), TextAccumulator::BUFFER_SIZE_INC - 1);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC);
+			acc += "Z";
+			UNITTEST_EQUALS(acc.getLength(), TextAccumulator::BUFFER_SIZE_INC);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 1);
 		}
-		{	TextAccumulator ac;
+		{	TextAccumulator acc;
 			for ( int i = 0; i < (1024 - 1)/16; i++) {
-				ac += "0123456789ABCDEF";
+				acc += "0123456789ABCDEF";
 			}
-			UNITTEST_EQUALS(ac.getLength(), TextAccumulator::BUFFER_SIZE_INC - 16);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC);
-			ac += "0123456789ABCDEF";
-			UNITTEST_EQUALS(ac.getLength(), TextAccumulator::BUFFER_SIZE_INC);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 16);
+			UNITTEST_EQUALS(acc.getLength(), TextAccumulator::BUFFER_SIZE_INC - 16);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC);
+			acc += "0123456789ABCDEF";
+			UNITTEST_EQUALS(acc.getLength(), TextAccumulator::BUFFER_SIZE_INC);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 16);
 		}
 
 	//---	TextAccumulator& operator+=(const char *str);
 	//---	String toString(void);
-		{	TextAccumulator ac;
-			UNITTEST_EQUALS(ac.getLength(), 0u);
-			ac += "";
-			UNITTEST_EQUALS(ac.toString(), "");
-			UNITTEST_EQUALS(ac.getLength(), 0u);
-			ac += "a";
-			UNITTEST_EQUALS(ac.toString(), "a");
-			UNITTEST_EQUALS(ac.getLength(), 1u);
-			ac += "bcdef";
-			UNITTEST_EQUALS(ac.toString(), "abcdef");
-			UNITTEST_EQUALS(ac.getLength(), 6u);
+		{	TextAccumulator acc;
+			UNITTEST_EQUALS(acc.getLength(), 0u);
+			acc += "";
+			UNITTEST_EQUALS(acc.toString(), "");
+			UNITTEST_EQUALS(acc.getLength(), 0u);
+			acc += "a";
+			UNITTEST_EQUALS(acc.toString(), "a");
+			UNITTEST_EQUALS(acc.getLength(), 1u);
+			acc += "bcdef";
+			UNITTEST_EQUALS(acc.toString(), "abcdef");
+			UNITTEST_EQUALS(acc.getLength(), 6u);
 		}
 
 	//---	void clear(void) { position = 0; buffer[position] = 0; }
 	//---	uint getLength(void) { return position; }
 	//---	uint getSize(void) { return current_size; }
-		{	TextAccumulator ac;
-			ac.clear();
-			UNITTEST_EQUALS(ac.getLength(), 0u);
-			ac += "";
-			ac.clear();
-			UNITTEST_EQUALS(ac.getLength(), 0u);
-			ac += "abcdef";
-			ac.clear();
-			UNITTEST_EQUALS(ac.getLength(), 0u);
+		{	TextAccumulator acc;
+			acc.clear();
+			UNITTEST_EQUALS(acc.getLength(), 0u);
+			acc += "";
+			acc.clear();
+			UNITTEST_EQUALS(acc.getLength(), 0u);
+			acc += "abcdef";
+			acc.clear();
+			UNITTEST_EQUALS(acc.getLength(), 0u);
 			for ( int i = 0; i < (1024 - 1)/16; i++) {
-				ac += "0123456789ABCDEF";
+				acc += "0123456789ABCDEF";
 			}
-			UNITTEST_EQUALS(ac.getLength(), 1024u - 16);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC);
-			ac.clear();
-			UNITTEST_EQUALS(ac.getLength(), 0u);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC);
+			UNITTEST_EQUALS(acc.getLength(), 1024u - 16);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC);
+			acc.clear();
+			UNITTEST_EQUALS(acc.getLength(), 0u);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC);
 			for ( int i = 0; i < (1024 - 1)/16; i++) {
-				ac += "0123456789ABCDEF";
+				acc += "0123456789ABCDEF";
 			}
-			ac += "0123456789ABCDEF";
-			UNITTEST_EQUALS(ac.getLength(), 1024u);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 16);
-			ac.clear();
-			UNITTEST_EQUALS(ac.getLength(), 0u);
-			UNITTEST_EQUALS(ac.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 16);
+			acc += "0123456789ABCDEF";
+			UNITTEST_EQUALS(acc.getLength(), 1024u);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 16);
+			acc.clear();
+			UNITTEST_EQUALS(acc.getLength(), 0u);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC * 2 + 16);
 		}
 	//---	void resizeBy(uint increment);
 		{
-//TODO
+			TextAccumulator acc;
+			UNITTEST_EQUALS(acc.getLength(), 0u);
+			UNITTEST_EQUALS(acc.getSize(), TextAccumulator::BUFFER_SIZE_INC);
 		}
 	}
 
@@ -959,7 +962,10 @@ uint tests_that_failed = 0;
 			UNITTEST(string.contains("DEF"));
 			UNITTEST(string.contains("Def"));
 		}
+	//---	String *duplicate(void) const;
+		{
 
+		}
 	//---	static bool String::strsub(const char *str, const char *sub); -----------------------------------------
 		{
 			UNITTEST(String::strsub("", ""));
@@ -1507,8 +1513,37 @@ uint tests_that_failed = 0;
 	//---	virtual Token current(void);
 	//---	virtual Token next(void);
 	//---	virtual bool  isEOF(void);
-		{	cchar *test_string =
-					"`~!!@#$%^&*()-=+[{]}\\|;:'\",<..>/?"
+		{	cchar *test_string_doublequote = "\"test string\"";
+			TokenStream stream(test_string_doublequote);
+			UNITTEST_EQUALS(stream.next(), Token(TokenType::eString, test_string_doublequote));
+		}
+		{ 	TokenStream stream1("LastModifiedDateTime\"05/07_2010 21:36:12.0000\"");
+			UNITTEST_EQUALS(stream1.next(), Token(TokenType::eWord, "LastModifiedDateTime"));
+			UNITTEST_EQUALS(stream1.next(), Token(TokenType::eString, "\"05/07_2010 21:36:12.0000\""));
+			TokenStream stream2("word\"test string\"12345");
+			UNITTEST_EQUALS(stream2.next(), Token(TokenType::eWord, "word"));
+			UNITTEST_EQUALS(stream2.next(), Token(TokenType::eString, "\"test string\""));
+			UNITTEST_EQUALS(stream2.next(), Token(TokenType::eNumber, "12345"));
+			TokenStream stream3("!\"test string\"&");
+			UNITTEST_EQUALS(stream3.next(), Token(TokenType::eBang, "!"));
+			UNITTEST_EQUALS(stream3.next(), Token(TokenType::eString, "\"test string\""));
+			UNITTEST_EQUALS(stream3.next(), Token(TokenType::eAmpersand, "&"));
+		}
+		{ 	TokenStream stream1("word'test string'");
+			UNITTEST_EQUALS(stream1.next(), Token(TokenType::eWord, "word"));
+			UNITTEST_EQUALS(stream1.next(), Token(TokenType::eString, "'test string'"));
+			TokenStream stream2("word'test string'12345");
+			UNITTEST_EQUALS(stream2.next(), Token(TokenType::eWord, "word"));
+			UNITTEST_EQUALS(stream2.next(), Token(TokenType::eString, "'test string'"));
+			UNITTEST_EQUALS(stream2.next(), Token(TokenType::eNumber, "12345"));
+			TokenStream stream3("!'test string'&");
+			UNITTEST_EQUALS(stream3.next(), Token(TokenType::eBang, "!"));
+			UNITTEST_EQUALS(stream3.next(), Token(TokenType::eString, "'test string'"));
+			UNITTEST_EQUALS(stream3.next(), Token(TokenType::eAmpersand, "&"));
+		}
+		{
+			cchar *test_string =
+					"`~!!@#$%^&*()-=+[{]}\\|;:,<..>/?"
 					" 0 1 2 3 4 5 6 7 8 9"
 					" a b c d e f g h i j k l m n o p q r s t u v w x y z"
 					" A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
@@ -1540,8 +1575,8 @@ uint tests_that_failed = 0;
 			UNITTEST_EQUALS(stream->next(), Token(TokenType::eBar, "|"));
 			UNITTEST_EQUALS(stream->next(), Token(TokenType::eSemicolon, ";"));
 			UNITTEST_EQUALS(stream->next(), Token(TokenType::eColon, ":"));
-			UNITTEST_EQUALS(stream->next(), Token(TokenType::eSingleQuote, "'"));
-			UNITTEST_EQUALS(stream->next(), Token(TokenType::eDoubleQuote, "\""));
+//			UNITTEST_EQUALS(stream->next(), Token(TokenType::eSingleQuote, "'"));
+//			UNITTEST_EQUALS(stream->next(), Token(TokenType::eDoubleQuote, "\""));
 			UNITTEST_EQUALS(stream->next(), Token(TokenType::eComma, ","));
 			UNITTEST_EQUALS(stream->next(), Token(TokenType::eLeftAngleBracket, "<"));
 			UNITTEST_EQUALS(stream->next(), Token(TokenType::ePeriod, "."));
@@ -2177,7 +2212,8 @@ uint tests_that_failed = 0;
 
 	//---			virtual String XmlTokenStream::toString(void) const override;
 		{
-//TODO
+			XmlTokenStream stream(xml_tests);
+			UNITTEST_EQUALS(stream.toString(), xml_tests);
 		}
 	//--- friend 	std::ostream& operator<<(std::ostream& stream, const XmlTokenStream& tokens);
 		{	std::ostringstream output;
@@ -2190,114 +2226,137 @@ uint tests_that_failed = 0;
 		}
 	}
 
-//=== class XmlTagTokenStream =======================================================================================================================
-//	void UnitTests::test_XmlTagTokenStream(void) {
-//	//---	XmlTagTokenStream::XmlTagTokenStream(Stream *stream);
-//	//---	virtual Token XmlTagTokenStream::next(void) override;
-//		{
-//			try {
-//				XmlTagTokenStream *tag_stream = new XmlTagTokenStream(new StringStream("<street>"));
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eLeftAngleBracket, "<"));
-//				UNITTEST_EQUALS(tag_stream->next(), Token('word', "street"));
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eRightAngleBracket, ">"));
-//				UNITTEST(tag_stream->next().isEOF());
-//				delete tag_stream;
-//			} catch ( const String& msg ) {
-//				std::cerr << "!!!" << msg << std::endl;
-//			}
-//		}
-//
-//	//---	XmlTagTokenStream::TagTokenStream(const String& string);
-//		{
-//			try {
-//				XmlTagTokenStream *tag_stream = new XmlTagTokenStream("<street");
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eLeftAngleBracket, "<"));
-//				UNITTEST_EQUALS(tag_stream->next(), Token('word', "street"));
-//				UNITTEST(tag_stream->next().isEOF());
-//				delete tag_stream;
-//			} catch ( const String& msg ) {
-//				std::cerr << "!!!" << msg << std::endl;
-//			}
-//		}
-//		{
-//			try {
-//				XmlTagTokenStream *tag_stream = new XmlTagTokenStream(new StringStream("<street attrib1=\"no space\" attrib2= \"space after '='\" attrib3 =\"space before '='\" attrib4='single quotes'>"));
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eLeftAngleBracket, "<"));
-//
-//				UNITTEST_EQUALS(tag_stream->next(), Token('word', "street"));
-//
-//				UNITTEST_EQUALS(tag_stream->next(), Token('word', "attrib1", " "));
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eEquals, "="));
-//				UNITTEST_EQUALS(tag_stream->next(), Token('str', "\"no space\""));
-//
-//				UNITTEST_EQUALS(tag_stream->next(), Token('word', "attrib2", " "));
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eEquals, "="));
-//				UNITTEST_EQUALS(tag_stream->next(), Token('str', "\"space after '='\"", " "));
-//
-//				UNITTEST_EQUALS(tag_stream->next(), Token('word', "attrib3", " "));
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eEquals, "=", " "));
-//				UNITTEST_EQUALS(tag_stream->next(), Token('str', "\"space before '='\""));
-//
-//				UNITTEST_EQUALS(tag_stream->next(), Token('word', "attrib4", " "));
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eEquals, "="));
-//				UNITTEST_EQUALS(tag_stream->next(), Token('str', "'single quotes'"));
-//
-//				UNITTEST_EQUALS(tag_stream->next(), Token(TokenType::eRightAngleBracket, ">"));
-//
-//				UNITTEST(tag_stream->next().isEOF());
-//				delete tag_stream;
-//
-//			} catch ( const String& msg ) {
-//				std::cerr << "!!!" << msg << std::endl;
-//			}
-//		}
-//
-//
-//	//---	virtual String XmlTagTokenizer::toString(void) const override { return "TagTokenStream"; }
-//		{
-//	//TODO
-//		}
-//
-//	//---friend 	std::ostream& operator<<(std::ostream& stream, const XmlTagTokenStream& tokens);
-//		{ 	std::ostringstream output;
-//			String text = "<street attrib1=\"no space\" attrib2= \"space after '='\" attrib3 =\"space before '='\" attrib4='single quotes'>";
-//			XmlTagTokenStream stream(text);
-//			while ( !stream.isEOF() ) {
-//				stream.next();
-//				output << stream.current().whitespace << stream.current().text;
-//			}
-//			UNITTEST_EQUALS(output.str(), text);
-//		}
-//	}
-
 //=== class Xml =====================================================================================================================================
+	/* NOTES:
+	 * 		1) XML allows single or double quote for attributes.
+	 * 		2) To test the attributes, they MUST be in alphabetical order because of the way std::map<> stores them. It's tempting to rewrite it
+	 * 			for this reason.
+	 */
 	void UnitTests::test_Xml(void) {
 	//---	Xml::Xml(TagTokenStream& stream)
-		{	Xml* xml = Xml::parse(new XmlTokenStream("<tag/>"));
-			delete xml;
-			xml = Xml::parse(new XmlTokenStream("<tag attribute1=\"text1\"/>"));
-			delete xml;
-			xml = Xml::parse(new XmlTokenStream("<tag attribute1=\"text2\" attribute1=\"text2\" attribute3=\"text3\" attribute4=\"text4\"/>"));
-			delete xml;
-			xml = Xml::parse(new XmlTokenStream("<tag></tag>"));
-			delete xml;
-			xml = Xml::parse(new XmlTokenStream("<tag attribute1=\"text2\" attribute1=\"text2\" attribute3=\"text3\" attribute4=\"text4\"></tag>"));
+	//---	virtual String Xml::toString(void) const override;
+		{
+			try {
+				cchar *str = "<tag/>";
+				Xml* xml = Xml::parse(new XmlTokenStream(str));
+				UNITTEST_EQUALS(xml->toString(), "<tag/>")
+				delete xml;
+
+			} catch ( const String& error ) {
+				FAIL("Should not have got this exception: \"" + error + "\"");
+			}
+
+			try {
+				cchar *str = "<tag attribute1=\"text1\"/>";
+				Xml* xml = Xml::parse(new XmlTokenStream(str));
+				UNITTEST_EQUALS(xml->toString(), str);
+				delete xml;
+
+			} catch ( const String& error ) {
+				FAIL("Should not have got this exception: \"" + error + "\"");
+			}
+
+			try {
+				cchar *str = "<tag attribute1=\"text2\" attribute2=\"text2\" attribute3=\"text3\" attribute4=\"text4\"/>";
+				Xml* xml = Xml::parse(new XmlTokenStream(str));
+				UNITTEST_EQUALS(xml->toString(), str);
+				delete xml;
+
+			} catch ( const String& error ) {
+				FAIL("Should not have got this exception: \"" + error + "\"");
+			}
+
+			try {
+				cchar *str = "<tag></tag>";
+				Xml* xml = Xml::parse(new XmlTokenStream(str));
+				UNITTEST_EQUALS(xml->toString(), "<tag/>")
+				delete xml;
+
+			} catch ( const String& error ) {
+				FAIL("Should not have got this exception: \"" + error + "\"");
+			}
+
+			try {
+				cchar *str =
+					"<tag_a>"
+						"this is a "
+						"<tag_b>amaricious, "
+							"<tag>duplicitous</tag> "
+						"</tag_b>"
+						"test"
+					"</tag_a>";
+				Xml* xml = Xml::parse(new XmlTokenStream(str));
+				UNITTEST_EQUALS(xml->toString(), str);
+				delete xml;
+
+			} catch ( const String& error ) {
+				FAIL("Should not have got this exception: \"" + error + "\"");
+			}
+
+			try {
+				cchar *str = "<tag attribute1=\"text2\" attribute2=\"text2\" attribute3=\"text3\" attribute4=\"text4\"></tag>";
+				Xml* xml = Xml::parse(new XmlTokenStream(str));
+				UNITTEST_EQUALS(xml->toString(), "<tag attribute1=\"text2\" attribute2=\"text2\" attribute3=\"text3\" attribute4=\"text4\"/>");
+				delete xml;
+
+			} catch ( const String& error ) {
+				FAIL("Should not have got this exception: \"" + error + "\"");
+			}
+
+			try {
+				cchar *str =
+					"<Photo orientation='portrait' type='JPEG' uid='1234-12345678901234567890'>"
+						"<filename>20240102-2345.jpeg</filename>"
+						"<caption>Mary and Chris on beach <i>with a <u>concealed carry</u></i> rabbit</caption>"
+					"</Photo>";
+				Xml* xml = Xml::parse(new XmlTokenStream(str));
+				UNITTEST_EQUALS(xml->toString(), str);
+				delete xml;
+
+			} catch ( const String& error ) {
+				FAIL("Should not have got this exception: \"" + error + "\"");
+			}
+
+			try {
+				cchar *str =
+					"<CallList base_index=\"1\" index=\"1\" max=\"201\" timestamp=\"05/07/2010 21:36:12.0000\" type=\"Address\">"
+						"<Item id=\"9843\" uuid=\"1234567890123-1234-0000-000000000000\">"
+							"<Name>"
+								"<First timestamp='05/07/2010 21:36:12.0000'>George</First>"
+								"<Last>Lewis</Last>"
+							"</Name>"
+							"<Properties>"
+								"<Property dataType=\"Bool\" key=\"fav\">true</Property>"
+								"<Property dataType=\"String\" key=\"language\">Finnish</Property>"
+							"</Properties>"
+							"<PhoneNumberList>"
+								"<PhoneNumber type=\"Home\">8015551212</PhoneNumber> uuid=\"1234567890123-1234-0001-000000000000\""
+								"<PhoneNumber type=\"Cell\">2035551212</PhoneNumber> uuid=\"1234567890123-1234-0001-000000000001\""
+							"</PhoneNumberList>"
+						"</Item>"
+					"</CallList>";
+				Xml* xml = Xml::parse(new XmlTokenStream(str));
+				UNITTEST_EQUALS(xml->toString(), str);
+				delete xml;
+
+			} catch ( const String& error ) {
+				FAIL("Should not have got this exception: \"" + error + "\"");
+			}
 		}
 
 	//---	Xml::Xml(const String& name)
 		{
-	//TODO
+			Xml xml("namesless");
+			UNITTEST_EQUALS(xml.name, "namesless");
+			UNITTEST_EQUALS(xml.elements.size(), 0u);
+			UNITTEST_EQUALS(xml.attributes.size(), 0u);
 		}
 
 	//---	Xml::Xml(XmlTokenStream xml_stream)
-		{
-	//TODO
-		}
-
-	//---	virtual Xml::~Xml(void)
-		{
-	//TODO
-		}
+//		{
+//			Xml xml(XmlTokenStream(xml_tests));
+//			xml.
+//		}
 
 	//---	std::vector<Xml*> Xml::operator[](const String& name)
 		{
@@ -2305,8 +2364,11 @@ uint tests_that_failed = 0;
 		}
 
 	//---	String Xml::operator()(const String& key)
-		{
-	//TODO
+		{	Xml xml("person");
+			xml("height") = "163cm";
+			UNITTEST_EQUALS(xml("height"), "163cm");
+			xml("height") = "60\"";
+			UNITTEST_EQUALS(xml("height"), "60\"");
 		}
 
 	//---	Xml* Xml::collectAttributes(const Token& token, Xml* xml = nullptr);
@@ -2314,7 +2376,7 @@ uint tests_that_failed = 0;
 	//TODO
 		}
 
-	//---	Xml* Xml::parseTag(XmlTokenStream xml_stream);
+	//---	Xml* Xml::parse(XmlTokenStream xml_stream);
 		{
 	//TODO
 		}
@@ -2323,10 +2385,9 @@ uint tests_that_failed = 0;
 		{
 	//TODO
 		}
-
-	//---	virtual String Xml::toString(void) const override;
+	//---	std::vector<Xml*> operator[](const String& name);
 		{
-	//TODO
+
 		}
 
 	//---
@@ -2353,7 +2414,6 @@ uint tests_that_failed = 0;
 				test_TokenStream,
 				test_CppTokenStream,
 				test_XmlTokenStream,
-//				test_XmlTagTokenStream,
 				test_Xml,
 				nullptr
 		};

@@ -22,30 +22,30 @@
 		String name;
 		std::vector<Klass*> elements;
 		std::map<String, String> attributes;
+		bool builder = false;
 
 		public:
-			Xml(void) {}
-			Xml(const String& name): name(name) {}
-			virtual ~Xml(void) {
-				for ( Klass *element : elements ) {
+/*tested*/	Xml(void): builder(true) {}
+/*tested*/	Xml(const String& name): name(name), builder(true) {}
+/*tested*/	virtual ~Xml(void) {
+				for ( auto *element : elements ) {
 					delete element;
 				}
 			}
 
-		public:
-			static void collect_tag_pieces(const Token& token, const String& tag_text, Xml *xml);
-			static Xml* parse(XmlTokenStream *xml_stream);
-			std::vector<Xml*> operator[](const String& name);
-			String operator()(const String& key);
+		private:
+/*??*/		std::vector<Xml*>* findPath(const std::vector<String>& name_path) const;
+/*??*/		static void collect_tag_pieces(const Token& token, Xml *xml);
 
 		public:
-	//		Xml* collectAttributes(const Token& token, Xml* xml = nullptr);
-	//		Xml* parseTag(XmlTokenStream xml_stream);
+/*tested*/	static Xml* parse(XmlTokenStream *xml_stream);
+/*??*/		std::vector<Xml*>* operator[](const String& name);
+/*tested*/	String& operator()(const String& key);
 
-			virtual const char* getChars(void) const {
-				return "Xml tree";
-			}
-			virtual String toString(void) const override;
+		public:
+/*??*/		virtual const char* getChars(void) const		{ return "Xml tree"; }
+/*??*/		virtual Klass *clone(void) const			{ return new Xml(*this); }
+/*tested*/	virtual String toString(void) const override;
 	};
 
 #endif /* XML_HPP_ */

@@ -20,30 +20,31 @@
 		uint bookmark = 0;
 
 		public:
-/**/		StringStream(const String& string): string(string) {}
+/*tested*/	StringStream(const String& string): string(string) {}
 
 		public:
-/**/		virtual int  current(void);
-/**/		virtual int  next(void);
-/**/		virtual int  peek(uint ahead = 0) const;
-/**/		virtual bool peek(const String& seed, bool consume = false); // <-- method not 'const' b/c revises object if "skip_seed" true
-/**/		virtual int  back(void);
-/**/		virtual void skip(uint chars = 1);
-/**/		virtual void setBookmark(void)				{ bookmark = position; }
-/**/		virtual void recallBookmark(void)			{ position = bookmark; bookmark = 0; first_time = true; }
+/*tested*/	virtual int  current(void);
+/*tested*/	virtual int  next(void);
+/*tested*/	virtual int  peek(uint ahead = 0) const;
+/*tested*/	virtual bool peek(const String& seed, bool consume = false); // <-- method not 'const' b/c revises object if "skip_seed" true
+/*tested*/	virtual int  back(void);
+/*tested*/	virtual void skip(uint chars = 1);
+/*tested*/	virtual void setBookmark(void)				{ bookmark = position; }
+/*tested*/	virtual void recallBookmark(void)			{ position = bookmark; bookmark = 0; first_time = true; }
 
 		public:
-/**/		virtual int operator*(void)					{ return current(); }
-/**/		virtual int operator++(void)				{ return next(); }
-/**/		virtual int operator--(void)				{ return back(); }
+/*tested*/	virtual int operator*(void)					{ return current(); }
+/*tested*/	virtual int operator++(void)				{ return next(); }
+/*tested*/	virtual int operator--(void)				{ return back(); }
 
 		public:
-/**/		virtual bool isEOF(void) const				{ return (position >= string.getLength()); }
-/**/		virtual uint getLength(void) const			{ return string.getLength(); }
-/**/		virtual uint getPosition(void) const		{ return position; }
-/**/		virtual cchar* getChars(void) const			{ return string.getChars() + position; }
-/**/		virtual String toString(void) const			{ return String::formatString("[position=%u stream=\"%s\"]", position, string.getChars()); }
-/**/friend	std::ostream& operator<<(std::ostream& stream, const StringStream& string) { return (stream << string.toString()); }
+/*tested*/	virtual bool isEOF(void) const				{ return (position >= string.getLength()); }
+/*tested*/	virtual uint getLength(void) const			{ return string.getLength(); }
+/*tested*/	virtual uint getPosition(void) const		{ return position; }
+/*tested*/	virtual cchar* getChars(void) const			{ return string.getChars() + position; }
+/*??*/		virtual Klass *clone(void) const		{ return new StringStream(*this); }
+/*tested*/	virtual String toString(void) const			{ return String::formatString("[position=%u stream=\"%s\"]", position, string.getChars()); }
+/*tested*/	friend std::ostream& operator<<(std::ostream& stream, const StringStream& string) { return (stream << string.toString()); }
 	};
 
 #endif /* STRINGSTREAM_HPP_ */

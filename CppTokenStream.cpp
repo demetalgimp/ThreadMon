@@ -1,3 +1,4 @@
+//editor: tab=4
 /*
  * CppTokenStream.cpp
  *

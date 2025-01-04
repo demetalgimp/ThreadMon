@@ -26,46 +26,41 @@
 			Token current_token;
 
 		public:
-/**/		TokenStream(Stream *stream): stream(stream) {}
-/**/		TokenStream(const String& string): stream(new StringStream(string)) {}
-/**/		virtual ~TokenStream(void) { delete stream; }
+/*tested*/	TokenStream(Stream *stream): stream(stream) {}
+/*tested*/	TokenStream(const String& string): stream(new StringStream(string)) {}
+/*tested*/	virtual ~TokenStream(void) { delete stream; }
 
 		protected:
-/**/		virtual String scoopSpace(void);
-/**/		virtual Token  scoopWord(const String& spaces);
-/**/		virtual void   scoopDigits(TextAccumulator& acc);
-/**/		virtual Token  scoopNumber(const String& spaces);
-/**/		virtual Token  scoopString(const String& spaces);
+/*tested*/	virtual String scoopSpace(void);
+/*tested*/	virtual Token  scoopWord(const String& spaces);
+/*tested*/	virtual void   scoopDigits(TextAccumulator& acc);
+/*tested*/	virtual Token  scoopNumber(const String& spaces);
+/*tested*/	virtual Token  scoopString(const String& spaces);
 
 		public:
-/**/		virtual Token current(void);
-/**/		virtual Token next(void);
-/**/		virtual void setBookmark(void) 				{ stream->setBookmark(); }
+/*tested*/	virtual Token current(void);
+/*tested*/	virtual Token next(void);
+/*tested*/	virtual void setBookmark(void) 						{ stream->setBookmark(); }
 
 //NOTE: TokenStream::recallBookmark() differs from the Stream::recallBookmark().
 //		Stream's current() after recallBookmark() returns the *last* letter.
 //		TokenStream's current() after recallBookmark() returns the *current* token.
 //	REASON: TokenStream's index into the stream is updated with at _least_ one character. Tracking the _last_
 //		index introduces more complexity than useful.
-/**/		virtual void recallBookmark(void)			{ stream->recallBookmark(); current_token.type = eEmpty; }
-			virtual Token mustBe(const std::set<Token>& tokens);
-			virtual Token mustBe(const Token& token);
-			virtual Token mayBe(const std::set<Token>& tokens);
-			virtual Token mayBe(const Token& token);
-//BROKEN!
-//			virtual void setStream(Stream *stream) {
-//				delete stream;
-//				this->stream = stream;
-//				current_token = Token();
-//			}
-/**/		virtual bool  isEOF(void) 					{ return (stream->isEOF()  ||  current_token.type == eEOF); }
+/*tested*/	virtual void recallBookmark(void)					{ stream->recallBookmark(); current_token.type = eEmpty; }
+/*tested*/	virtual Token mustBe(const std::set<Token>& tokens);
+/*tested*/	virtual Token mustBe(const Token& token);
+/*tested*/	virtual Token mayBe(const std::set<Token>& tokens);
+/*tested*/	virtual Token mayBe(const Token& token);
+/*tested*/	virtual bool  isEOF(void) 							{ return (stream->isEOF()  ||  current_token.type == eEOF); }
 
 		public: //--- Klass overrides
-/**/		virtual cchar* getChars(void) const override { return "TokenStream"; }
-/**/		virtual String toString(void) const override;
+/*tested*/	virtual cchar* getChars(void) const override		{ return "TokenStream"; }
+/*??*/		virtual Klass *clone(void) const				{ return new TokenStream(*this); }
+/*tested*/	virtual String toString(void) const override;
 
 		public:
-/**/friend 	std::ostream& operator<<(std::ostream& stream, const TokenStream& tokens);
+/*tested*/	friend 	std::ostream& operator<<(std::ostream& stream, const TokenStream& tokens);
 	};
 
 #endif
@@ -73,3 +68,9 @@
 
 
 
+	//BROKEN! There's no way to reuse a stream at this time.
+	//			virtual void setStream(Stream *stream) {
+	//				delete stream;
+	//				this->stream = stream;
+	//				current_token = Token();
+	//			}

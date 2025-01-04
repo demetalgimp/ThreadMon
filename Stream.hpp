@@ -21,7 +21,7 @@
 			virtual ~Stream(void) {}
 
 		public:
-			uint getLineNumber(void) { return linenum; }
+/*??*/		uint getLineNumber(void) { return linenum; }
 
 		public:
 			virtual int  back(void) = 0;

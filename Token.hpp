@@ -48,36 +48,37 @@
 			String text;
 			String whitespace;
 
-/**/		Token(void): type(eEmpty) {}
-/**/		Token(TokenType type)										: type(type) { text = wideCharToString(type).strip(); }
-/**/		Token(TokenType type, String text, String whitespace = "")	: Token(type) { this->text = text; this->whitespace = whitespace; }
-/**/		Token(wchar type)											: type((TokenType)type), text(wideCharToString(type).strip()) {}
-/**/		Token(wchar type, String text, String whitespace = "")		: Token(type) { this->text = text; this->whitespace = whitespace; }
-/**/		Token(const Token& token)									: type(token.type), text(token.text), whitespace(token.whitespace) {}
-/**/		bool isEOF(void) { return (type == eEOF); }
+/*tested*/	Token(void): type(eEmpty) {}
+/*tested*/	Token(TokenType type)										: type(type) { text = wideCharToString(type).strip(); }
+/*tested*/	Token(TokenType type, String text, String whitespace = "")	: Token(type) { this->text = text; this->whitespace = whitespace; }
+/*tested*/	Token(wchar type)											: type((TokenType)type), text(wideCharToString(type).strip()) {}
+/*tested*/	Token(wchar type, String text, String whitespace = "")		: Token(type) { this->text = text; this->whitespace = whitespace; }
+/*tested*/	Token(const Token& token)									: type(token.type), text(token.text), whitespace(token.whitespace) {}
+/*tested*/	bool isEOF(void) { return (type == eEOF); }
 
-/**/		Token& operator=(const Token& token)		{ type = token.type; text = token.text; whitespace = token.whitespace; return *this; }
+/*tested*/	Token& operator=(const Token& token)		{ type = token.type; text = token.text; whitespace = token.whitespace; return *this; }
 
-/**/		bool operator==(const Token& token) const	{ return (type == token.type  &&  text == token.text  &&  whitespace == token.whitespace); }
-/**/		bool operator==(TokenType type) const 		{ return (this->type == type); }
-/**/		bool operator==(const String& text) const	{ return (this->text == text); }
-/**/		bool operator==(int value) const			{ return (value == type); }
-/**/friend 	bool operator==(int value, Token token) 	{ return (value == token.type); }
+/*tested*/	bool operator==(const Token& token) const	{ return (type == token.type  &&  text == token.text  &&  whitespace == token.whitespace); }
+/*tested*/	bool operator==(TokenType type) const 		{ return (this->type == type); }
+/*tested*/	bool operator==(const String& text) const	{ return (this->text == text); }
+/*tested*/	bool operator==(int value) const			{ return (value == type); }
+/*tested*/	friend bool operator==(int value, Token token) 	{ return (value == token.type); }
 
-/**/		bool operator!=(const Token& token) const	{ return !(type == token.type  &&  text == token.text  &&  whitespace == token.whitespace); }
-/**/		bool operator!=(TokenType type) const		{ return (this->type != type); }
-/**/		bool operator!=(const String& text) const	{ return (this->text != text); }
+/*tested*/	bool operator!=(const Token& token) const	{ return !(type == token.type  &&  text == token.text  &&  whitespace == token.whitespace); }
+/*tested*/	bool operator!=(TokenType type) const		{ return (this->type != type); }
+/*tested*/	bool operator!=(const String& text) const	{ return (this->text != text); }
 
-/**/		bool operator<(const Token& token) const	{ return (type < token.type  &&  text < token.text); }
+/*tested*/	bool operator<(const Token& token) const	{ return (type < token.type  &&  text < token.text); }
 
 
-/**/static 	String wideCharToString(wchar wide_char);
-/**/		virtual const char* getChars(void) const	{ return text.getChars(); }
-/**/		virtual String toString(void) const { return String::formatString("['%s': \"%s\", \"%s\"]", wideCharToString(type).getChars(), text.getChars(), whitespace.getChars()); }
-/**/		static bool isWordStart(int c);
-/**/		static bool isWord(int c) { return ( isWordStart(c) || isdigit(c) ); }
+/*tested*/	static String wideCharToString(wchar wide_char);
+/*tested*/	virtual const char* getChars(void) const	{ return text.getChars(); }
+/*??*/		virtual Klass *clone(void) const		{ return new Token(*this); }
+/*tested*/	virtual String toString(void) const { return String::formatString("['%s': \"%s\", \"%s\"]", wideCharToString(type).getChars(), text.getChars(), whitespace.getChars()); }
+/*tested*/	static bool isWordStart(int c);
+/*tested*/	static bool isWord(int c) { return ( isWordStart(c) || isdigit(c) ); }
 
-/**/friend	std::ostream& operator<<(std::ostream& ostream, const Token& token) { return ostream << token.toString(); }
+/*tested*/	friend std::ostream& operator<<(std::ostream& ostream, const Token& token) { return ostream << token.toString(); }
 	};
 
 #endif /* TOKEN_HPP_ */

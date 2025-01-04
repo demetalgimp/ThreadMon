@@ -29,7 +29,6 @@ typedef const char cchar;
 class String;
 
 #define THROW_ERROR(fmt, ...) throw String::formatString("Error[%s:%d]:- " fmt "\n", __FILE__, __LINE__, __VA_ARGS__)
-//#define THROW_ERROR(fmt, ...) std::cerr << String::formatString("Error[%s:%d]:- " fmt, __FILE__, __LINE__, __VA_ARGS__) << std::endl
 
 	class Klass {
 		public:
@@ -39,10 +38,11 @@ class String;
 		public:
 			virtual cchar* getChars(void) const = 0;
 			virtual String toString(void) const = 0;
-			friend std::ostream& operator<<(std::ostream& stream, const Klass& object);
+			virtual Klass *clone(void) const = 0;
+/*??*/		friend std::ostream& operator<<(std::ostream& stream, const Klass& object);
 	};
 
-	class TextAccumulator {
+	class TextAccumulator: public Klass {
 		friend class UnitTests;
 
 		private:
@@ -54,24 +54,32 @@ class String;
 			uint position = 0;
 
 		public:
-/**/		TextAccumulator(void)					{ buffer[position] = 0; }
-/**/		virtual ~TextAccumulator(void)			{ delete [] buffer; }
+/*tested*/	TextAccumulator(void)					{ buffer[position] = 0; }
+/*tested*/	virtual ~TextAccumulator(void)			{ delete [] buffer; }
 
 		public:
-/**/		TextAccumulator& operator+=(char c);
-/**/		TextAccumulator& operator+=(const char *str);
-/**/		char operator[](uint index);
+/*tested*/	TextAccumulator& operator+=(char c);
+/*tested*/	TextAccumulator& operator+=(const char *str);
+/*tested*/	char operator[](uint index);
 
 		private:
-			void resizeBy(uint increment);
+/*??*/		void resizeBy(uint increment);
 
 		public:
-/**/		void clear(void) { position = 0; buffer[position] = 0; }
-/**/		uint getLength(void) { return position; }
-/**/		uint getSize(void) { return current_size; }
+/*tested*/	void clear(void) { position = 0; buffer[position] = 0; }
+/*tested*/	uint getLength(void) { return position; }
+/*tested*/	uint getSize(void) { return current_size; }
 
 		public:
-/**/		String toString(void);
+/*??*/		cchar *getChars(void) const { return "TextAccumulator"; }
+/*tested*/	String toString(void) const;
+/*??*/		TextAccumulator *clone(void) const {
+				TextAccumulator *acc = new TextAccumulator();
+				acc->current_size = current_size;
+				acc->buffer = strdup(buffer);
+				acc->position = position;
+				return acc;
+			}
 	};
 
 	class String: public Klass {
@@ -89,75 +97,77 @@ class String;
 			size_t size = 0;
 
 		public:
-/**/		compare_fn_t *compare_fn = strcmp;
-/**/		strsub_fn_t *strsub_fn = strsub;
-/**/		strstr_fn_t *strstr_fn = strstr;
+/*tested*/	compare_fn_t *compare_fn = strcmp;
+/*tested*/	strsub_fn_t *strsub_fn = strsub;
+/*tested*/	strstr_fn_t *strstr_fn = strstr;
 
 		public:
-/**/		String(cchar *str = nullptr, size_t count = 0);
-/**/		String(const String& string);
-/**/		String(const std::string& std_string): String(std_string.c_str()) {}
-/**/		explicit String(char value);
-/**/		virtual ~String(void);
+/*tested*/	String(cchar *str = nullptr, size_t count = 0);
+/*tested*/	String(const String& string);
+/*tested*/	String(const std::string& std_string): String(std_string.c_str()) {}
+/*tested*/	explicit String(char value);
+/*tested*/	virtual ~String(void);
 
 		private:
-			String(char *str, size_t length, size_t size): buffer(str), length(length), size(size) {}
+/*??*/		String(char *str, size_t length, size_t size): buffer(str), length(length), size(size) {}
 
 		public: //--- Operator overloads
-/**/		String operator+(cchar *str) const;
-/**/		String operator+(const String& string) const;
-/**/		friend String operator+(cchar* str, const String& string);
-/**/		char operator[](uint index) const;
-/**/		bool operator==(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) == 0); }
-/**/		bool operator==(const std::string& std_string) const					{ return (compare_fn((cchar*)buffer, (std_string.c_str()?: "")) == 0); }
-/**/friend  bool operator==(const std::string& std_string, const String& string)	{ return (string.compare_fn((std_string.c_str()?: ""), (cchar*)string.buffer) == 0); }
-/**/		bool operator==(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) == 0); }
-/**/friend  bool operator==(const char *str, const String& string)					{ return (string.compare_fn(str, (cchar*)string.buffer) == 0); }
-/**/		bool operator!=(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) != 0); }
-/**/		bool operator!=(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) != 0); }
-/**/		bool operator>=(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) >= 0); }
-/**/		bool operator>=(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) >= 0); }
-/**/		bool operator<=(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) <= 0); }
-/**/		bool operator<=(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) <= 0); }
-/**/		bool operator>(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) > 0); }
-/**/		bool operator>(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) > 0); }
-/**/		bool operator<(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) < 0); }
-/**/		bool operator<(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) < 0); }
-/**/		String& operator=(cchar *str);
-/**/		String& operator=(const std::string& std_string);
-/**/		String& operator=(const String& string);
-/**/		String& operator+=(cchar *str);
-/**/		String& operator+=(const String& string);
-/**/friend  std::ostream& operator<<(std::ostream& stream, const String& string);
+/*tested*/	String operator+(cchar *str) const;
+/*tested*/	String operator+(const String& string) const;
+/*tested*/	friend String operator+(cchar* str, const String& string);
+/*tested*/	char operator[](uint index) const;
+/*tested*/	bool operator==(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) == 0); }
+/*tested*/	bool operator==(const std::string& std_string) const					{ return (compare_fn((cchar*)buffer, (std_string.c_str()?: "")) == 0); }
+/*tested*/	friend bool operator==(const std::string& std_string, const String& string)	{ return (string.compare_fn((std_string.c_str()?: ""), (cchar*)string.buffer) == 0); }
+/*tested*/	bool operator==(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) == 0); }
+/*tested*/	friend bool operator==(const char *str, const String& string)					{ return (string.compare_fn(str, (cchar*)string.buffer) == 0); }
+/*tested*/	bool operator!=(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) != 0); }
+/*tested*/	bool operator!=(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) != 0); }
+/*tested*/	bool operator>=(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) >= 0); }
+/*tested*/	bool operator>=(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) >= 0); }
+/*tested*/	bool operator<=(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) <= 0); }
+/*tested*/	bool operator<=(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) <= 0); }
+/*tested*/	bool operator>(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) > 0); }
+/*tested*/	bool operator>(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) > 0); }
+/*tested*/	bool operator<(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) < 0); }
+/*tested*/	bool operator<(const String& string) const								{ return (compare_fn((cchar*)buffer, (cchar*)string.buffer) < 0); }
+/*tested*/	String& operator=(cchar *str);
+/*tested*/	String& operator=(const std::string& std_string);
+/*tested*/	String& operator=(const String& string);
+/*tested*/	String& operator+=(cchar *str);
+/*tested*/	String& operator+=(const String& string);
+/*tested*/	friend std::ostream& operator<<(std::ostream& stream, const String& string);
 
 		public: //--- manipulation methods
-/**/		bool startsWith(cchar* sub) const;
-/**/		bool startsWith(const String& sub) const;
-/**/		bool contains(cchar* sub) const							{ return (strstr_fn(buffer, (sub?: "")) != nullptr); }
-/**/		bool contains(const String& sub) const					{ return (strstr_fn(buffer, sub.buffer) != nullptr); }
-/**/		String strip(void) const;
-/**/		String& clear(void);
-/**/		std::vector<String> split(cchar* needle) const;
-/**/		std::vector<String> split(const String& needle) const;
+/*tested*/	bool startsWith(cchar* sub) const;
+/*tested*/	bool startsWith(const String& sub) const;
+/*tested*/	bool contains(cchar* sub) const							{ return (strstr_fn(buffer, (sub?: "")) != nullptr); }
+/*tested*/	bool contains(const String& sub) const					{ return (strstr_fn(buffer, sub.buffer) != nullptr); }
+/*tested*/	String strip(void) const;
+/*tested*/	String& clear(void);
+/*tested*/	std::vector<String> split(cchar* needle) const;
+/*tested*/	std::vector<String> split(const String& needle) const;
 
 		protected:
-			String& resize(uint new_size);
+/*??*/		String& resize(uint new_size);
 
 		public: //--- getters/setters
-/**/		bool isEmpty(void) const								{ return (length == 0); }
-/**/		size_t getLength(void) const							{ return length; }
-/**/		size_t getSize(void) const								{ return size; }
-/**/		cchar* getChars(void) const								{ return buffer; }
-/**/		String toString(void) const								{ return *this; }
-/**/		String& enableIgnoreCase(bool ignore);
+/*tested*/	bool isEmpty(void) const								{ return (length == 0); }
+/*tested*/	size_t getLength(void) const							{ return length; }
+/*tested*/	size_t getSize(void) const								{ return size; }
+/*??*/		String *clone(void) const 							{ return new String(*this); }
+
+/*tested*/	cchar* getChars(void) const								{ return buffer; }
+/*tested*/	String toString(void) const								{ return *this; }
+/*tested*/	String& enableIgnoreCase(bool ignore);
 
 		public:
-/**/		static bool strsub(cchar *str, cchar *sub);
-/**/		static bool strcasesub(cchar *str, cchar *sub);
-/**/		static String toString(long long number, uint base = 10);
-/**/		static String formatString(const String& fmt, ...);
-/**/		String hexDump(void) const;
-/**/		static String wideCharToString(uint wchar);
+/*tested*/	static bool strsub(cchar *str, cchar *sub);
+/*tested*/	static bool strcasesub(cchar *str, cchar *sub);
+/*tested*/	static String toString(long long number, uint base = 10);
+/*tested*/	static String formatString(const String& fmt, ...);
+/*tested*/	String hexDump(void) const;
+/*tested*/	static String wideCharToString(uint wchar);
 	};
 
 FILE *fopen(const String& filename, const String& permissions);

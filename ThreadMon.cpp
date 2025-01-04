@@ -1,3 +1,4 @@
+//editor: tab=4
 //============================================================================
 // Name        : ThreadMon.cpp
 // Author      : Sean Walton, PhD/abd

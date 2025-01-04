@@ -1,3 +1,4 @@
+//editor: tab=4
 /*
  * XmlTokenStream.cpp
  *
@@ -35,7 +36,7 @@
 		memset(tmps, 0, sizeof(tmps));
 		tmps[index++] = stream->current();
 
-	//--- "</tag>"
+	//--- (end tag) "</tag>"
 		if ( stream->next() == '/' ) {
 			type = eEndTag;
 			tmps[index++] = stream->current();
@@ -55,16 +56,24 @@
 				THROW_ERROR("malformed XML tag [line#%d]: expecting start of tag name after '<' but instead got %c (0x%2X)", stream->getLineNumber(), stream->current(), stream->current());
 			}
 
-	//--- "<tag>" or "<tag/>"
+	//--- (start tag) <tag attrib="..." attrib='...' ...> or (atom) <tag attrib="..." attrib='...' .../>
+	//--- Alg: collect everything between '<' and '>'. If there is a string, collect up to delimiter, then resume.
 		} else {
 			tmps[index++] = stream->current();
+
 			stream->next();
 			while ( !stream->isEOF()  &&  stream->current() != '/'  &&  stream->current() != '>' ) {
 				tmps[index++] = stream->current();
-				if ( stream->next() == '"' ) {
 
-					while ( !stream->isEOF()  &&  stream->current() != '"' ) {
+				if ( stream->next() == '"'  ||  stream->current() == '\'' ) {
+
+					char delimiter = stream->current();
+					tmps[index++] = delimiter;
+
+					stream->next();
+					while ( !stream->isEOF()  &&  stream->current() != delimiter ) {
 						tmps[index++] = stream->current();
+
 						if ( stream->next() == '\\' ) {
 							tmps[index++] = stream->current();
 							tmps[index++] = stream->next();
@@ -129,79 +138,3 @@
 		}
 		return current_token;
 	}
-
-//=== TagTokenStream ================================================================================================================================
-
-//	Token XmlTagTokenStream::next(void) {
-//		if ( !stream->isEOF() ) {
-//			String spaces = scoopSpace();
-//
-//		//--- tag *or* attribute name
-//			if ( Token::isWordStart(stream->current()) ) {
-//				current_token = scoopWord(spaces);
-//
-//		//--- attribute value (as string)
-//			} else if ( stream->current() == '\''  ||  stream->current() == '"' ) {
-//				current_token = scoopString(spaces);
-//				current_token.type = TokenType::eString;
-//
-//		//--- end tag
-//			} else if ( stream->peek("</", true) ) {
-//				current_token = Token(TokenType::eEndTag);
-//
-//		//--- atom tag
-//			} else if ( stream->peek("/>", true) ) {
-//				current_token = Token(TokenType::eAtomTag);
-//
-//		//--- char ∈ {'<', '=', '>'}
-//			} else {
-//				current_token = Token((TokenType)stream->current());
-//				current_token.whitespace = spaces;
-//				stream->next();
-//			}
-//
-//		} else {
-//			current_token = Token(eEOF);
-//		}
-//		return current_token;
-//	}
-//
-//	void XmlTagTokenStream::mustBe(const std::set<Token>& tokens) {
-//		String spaces = scoopSpace();
-//		Token token = current();
-//		if ( tokens.find(token) == tokens.end() ) {
-//			THROW_ERROR("malformed XML tag[line#%d]: expecting '<' but instead got %c (0x%2X)", stream->getLineNumber(), stream->current(), stream->current());
-//
-//		} else {
-//			next();
-//		}
-//	}
-//	void XmlTagTokenStream::mustBe(const Token& token) {
-//		String spaces = scoopSpace();
-//		if ( token != current().type ) {
-//			THROW_ERROR("malformed XML tag[line#%d]: expecting '<' but instead got %c (0x%2X)", stream->getLineNumber(), stream->current(), stream->current());
-//
-//		} else {
-//			next();
-//		}
-//	}
-//	bool XmlTagTokenStream::mayBe(const std::set<Token>& tokens) {
-//		String spaces = scoopSpace();
-//		Token token = current();
-//		if ( tokens.find(token) != tokens.end() ) {
-//			next();
-//			return true;
-//		}
-//		return false;
-//	}
-//	bool XmlTagTokenStream::mayBe(const Token& token) {
-//		String spaces = scoopSpace();
-//		if ( token == current().type ) {
-//			next();
-//			return true;
-//		}
-//		return false;
-//	}
-
-
-

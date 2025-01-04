@@ -10,6 +10,10 @@
 #include <sstream>
 #include "String.hpp"
 
+	std::ostream& operator<<(std::ostream& stream, const Klass& object) {
+		return (stream << object.toString());
+	}
+
 	void TextAccumulator::resizeBy(uint increment) {
 		if ( position + increment >= current_size ) {
 			current_size += increment + BUFFER_SIZE_INC;
@@ -45,7 +49,7 @@
 		THROW_ERROR("Bad TextAccumulator index: size=%u index=%u.", position, index);
 		return -1;
 	}
-	String TextAccumulator::toString(void) {
+	String TextAccumulator::toString(void) const {
 		return buffer;
 	}
 
@@ -71,7 +75,7 @@
 	}
 
 	String::String(const String& string): length(string.length), size(string.size), compare_fn(string.compare_fn), strsub_fn(string.strsub_fn), strstr_fn(string.strstr_fn) {
-		buffer = new char[size + 10];
+		buffer = new char[size + 1];
 		strncpy(buffer, string.buffer, length + 1);
 		buffer[length] = 0;
 	}
