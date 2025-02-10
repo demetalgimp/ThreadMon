@@ -74,7 +74,9 @@
 /*tested*/	static String wideCharToString(wchar wide_char);
 /*tested*/	virtual const char* getChars(void) const	{ return text.getChars(); }
 /*??*/		virtual Klass *clone(void) const		{ return new Token(*this); }
-/*tested*/	virtual String toString(void) const { return String::formatString("['%s': \"%s\", \"%s\"]", wideCharToString(type).getChars(), text.getChars(), whitespace.getChars()); }
+/*tested*/	virtual String toString(void) const {
+				return String::formatString("{\"type\": \"'%s'\", \"text\": \"%s\", \"whitespace\": \"%s\"}", wideCharToString(type).getChars(), text.getChars(), whitespace.getChars());
+			}
 /*tested*/	static bool isWordStart(int c);
 /*tested*/	static bool isWord(int c) { return ( isWordStart(c) || isdigit(c) ); }
 

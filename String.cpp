@@ -102,6 +102,12 @@
 	 	return tmps;
 	}
 
+	String String::operator+(long long num) const {
+		char tmps[length + 200];
+		snprintf(tmps, sizeof(tmps), "%s%lld", buffer, num);
+		return tmps;
+	}
+
 	char String::operator[](uint index) const {
 		if ( index < length ) {
 			return buffer[index];
@@ -334,8 +340,8 @@
 	}
 
 
-#define NUM_TO_HEX(num) (num + (num <= 9? '0': 'A' - 10))
-#define DIGIT_TO_HEX(digit, pos) ((digit >> (pos * 4)) & 0x0F)
+#define NUM_TO_HEX(num) ((num) + ((num) <= 9? '0': 'A' - 10))
+#define DIGIT_TO_HEX(digit, pos) (((digit) >> ((pos) * 4)) & 0x0F)
 // 0000: 00 00 00 00  00 00 00 00 | 00 00 00 00  00 00 00 00   0123456789ABCDEF
 //                 1               2               3               4          v
 // 0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF
@@ -397,7 +403,48 @@
 		return str;
 	}
 
+	String String::toString(void) const {
+		return String( "{" ) +
+					"\"buffer\": \"" + buffer + "\", "
+					"\"length\": \"" + length + "\", "
+					"\"size\": \""   + size   + "\", "
+					"\"compare_fn\": \"" + (compare_fn == strcmp? "strcmp()": "strcasecmp()") + "\", "
+					"\"strsub_fn\": \""  + (compare_fn == strcmp? "strsub()": "strcasesub()") + "\", "
+					"\"strstr_fn\": \""  + (compare_fn == strcmp? "strstr()": "strcasestr()") + "\""
+				"}";
+	}
 
+	String String::escape_ize(void) const {
+		char tmps[length*4];
+		unsigned index = 0;
+
+		char *c = buffer;
+		while ( *c != 0  &&  index < sizeof(tmps) ) {
+			switch ( *c ) {
+				case '\a': tmps[index++] = '\\'; tmps[index++] = 'a'; break;
+				case '\b': tmps[index++] = '\\'; tmps[index++] = 'b'; break;
+				case '\f': tmps[index++] = '\\'; tmps[index++] = 'f'; break;
+				case '\n': tmps[index++] = '\\'; tmps[index++] = 'n'; break;
+				case '\r': tmps[index++] = '\\'; tmps[index++] = 'r'; break;
+				case '\t': tmps[index++] = '\\'; tmps[index++] = 't'; break;
+				case '\v': tmps[index++] = '\\'; tmps[index++] = 'v'; break;
+				default:
+					if ( (1 <= *c  &&  *c < ' ')  ||  (uchar)*c >= (uchar)0x7F ) {
+						tmps[index++] = '\\';
+						tmps[index++] = 'x';
+						tmps[index++] = NUM_TO_HEX((*c >> 4) & 0x0F);
+						tmps[index++] = NUM_TO_HEX(*c & 0x0F);
+
+					} else {
+						tmps[index++] = *c;
+					}
+					break;
+			}
+			c++;
+		}
+		tmps[index] = 0;
+		return tmps;
+	}
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 	FILE *fopen(const String& filename, const String& permissions) {
 		return fopen((char*)filename.getChars(), (char*)permissions.getChars());

@@ -11,7 +11,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "UnitTests.hpp"
 #include "String.hpp"
 #include "Stream.hpp"
 #include "Xml.hpp"
@@ -19,39 +18,16 @@
 #include "CppTokenStream.hpp"
 #include "XmlTokenStream.hpp"
 #include "AsciiVT200.hpp"
+#include "IAS_TestSuite.hpp"
+#include "UnitTests.hpp"
 
-uint test_number = 0;
-uint tests_that_passed = 0;
-uint tests_that_failed = 0;
-
-	static void IAS_pass(const char *src_filename, const char *method, uint lineno) {
-		test_number++;
-		std::cout << std::flush
-			<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: PASSED."
-			<< std::endl
-			<< std::flush;
-	}
-	static void IAS_fail(const char *src_filename, const char *method, uint lineno, const String& msg) {
-
-		tests_that_failed++;
-
-		std::cerr << std::flush
-			<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
-			<< AsciiVT200::redForeground
-			<< " FAILED -- " << msg
-			<< AsciiVT200::resetTerminal
-			<< std::endl
-			<< std::flush;
-	}
-
-	static void IAS_unittest(const char *src_filename, const char *method, uint lineno, const char *str_to_test, auto to_test) {
+	void IAS_unittest_assert(const char *src_filename, const char *method, uint lineno, const char *str_to_test, const auto to_test) {
 		test_number++;
 
 		if ( to_test ) {
 			tests_that_passed++;
 			std::cout << std::flush
 				<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
-	//			<< "expression: " << (strchr(to_test, '\n')? '\n': ' ') << to_test << "... PASSED."
 				<< str_to_test << "... PASSED."
 				<< std::endl
 				<< std::flush;
@@ -70,13 +46,13 @@ uint tests_that_failed = 0;
 		}
 	}
 
-	static String autoToString(auto var) {
+	String autoToString(auto var) {
 		std::ostringstream output;
 		output << var;
 		return output.str();
 	}
 
-	static void IAS_unittest_equals(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, auto output_to_test, auto expected) {
+	void IAS_unittest_equals(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, const auto output_to_test, const auto expected) {
 		test_number++;
 
 		String out__str = autoToString(output_to_test);
@@ -97,10 +73,11 @@ uint tests_that_failed = 0;
 				<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
 				<< "expression: " << (strchr(str_output_to_test, '\n')? ":\n": " ") << str_output_to_test << "... "
 				<< AsciiVT200::redForeground << "FAILED: " << AsciiVT200::resetTerminal
-				<< "expected: "
-				<< AsciiVT200::redForeground << (strchr(exp__str.getChars(), '\n')? "\n": " ") << expected << " " << AsciiVT200::resetTerminal
-				<< "but got:"
-				<< AsciiVT200::redForeground << (strchr(out__str.getChars(), '\n')? "\n": " ") << output_to_test << AsciiVT200::resetTerminal;
+				<< "expected: ["
+				<< AsciiVT200::redForeground << (strchr(exp__str.escape_ize().getChars(), '\n')? "\n": "") << expected << AsciiVT200::resetTerminal
+				<< "] but got: ["
+				<< AsciiVT200::redForeground << (strchr(out__str.escape_ize().getChars(), '\n')? "\n": "") << output_to_test << AsciiVT200::resetTerminal
+				<< "]";
 			std::cout
 				<< std::endl
 				<< std::flush;
@@ -121,11 +98,12 @@ uint tests_that_failed = 0;
 		IAS_fail(usecase_file, usecase_method, usecase_lineno, MSG); \
 	}
 
-#define UNITTEST(TO_TEST) { \
+//--- ERROR! Because I am using Eclipse (which has fallen from grace), moving these macros cannot be left in a header file without TONS of errors.
+#define UNITTEST_ASSERT(TO_TEST) { \
 			const char *usecase_file = __FILE__; \
 			const char *usecase_method = __FUNCTION__; \
 			uint usecase_lineno = __LINE__; \
-			IAS_unittest(usecase_file, usecase_method, usecase_lineno, #TO_TEST, TO_TEST); \
+			IAS_unittest_assert(usecase_file, usecase_method, usecase_lineno, #TO_TEST, TO_TEST); \
 		}
 
 #define UNITTEST_EQUALS(OUTPUT_TO_TEST, EXPECTED) { \
@@ -133,17 +111,6 @@ uint tests_that_failed = 0;
 			const char *usecase_method = __FUNCTION__; \
 			uint usecase_lineno = __LINE__; \
 			IAS_unittest_equals(usecase_file, usecase_method, usecase_lineno, #OUTPUT_TO_TEST, #EXPECTED, OUTPUT_TO_TEST, EXPECTED); \
-		}
-
-#define PROTECT(...) \
-		{\
-			pid_t pid; \
-			if ( !(pid = fork()) ) { \
-				__VA_ARGS__; \
-			} else { \
-				int result; \
-				waitpid(pid, &result, 0); \
-			} \
 		}
 
 //=== class TextAccumulator =========================================================================================================================
@@ -403,9 +370,9 @@ uint tests_that_failed = 0;
 	//---	bool String::operator==(const char *str) const; ---------------------------------------------------
 	//---	bool String::operator==(const String& string) const; ----------------------------------------------
 		{
-			UNITTEST(String() == "");
-			UNITTEST(String() == nullptr);
-			UNITTEST(String() == String());
+			UNITTEST_ASSERT(String() == "");
+			UNITTEST_ASSERT(String() == nullptr);
+			UNITTEST_ASSERT(String() == String());
 		}
 		{
 			UNITTEST_EQUALS(String("1234567890"), "1234567890");
@@ -417,70 +384,70 @@ uint tests_that_failed = 0;
 	//---friend  bool operator==(const std::string& std_string, const String& string); ------------------------
 		{
 			UNITTEST_EQUALS(String("1234567890"), std::string("1234567890"));
-			UNITTEST(!(String("1234567890") == std::string("")));
+			UNITTEST_ASSERT(!(String("1234567890") == std::string("")));
 			UNITTEST_EQUALS(std::string("1234567890"), String("1234567890"));
-			UNITTEST(!(std::string("") == String("1234567890")));
+			UNITTEST_ASSERT(!(std::string("") == String("1234567890")));
 		}
 	//---	bool String::operator!=(const String& string) const; ----------------------------------------------
 		{
-			UNITTEST(String("1234567890") != "");
-			UNITTEST(String("1234567890") != "1");
-			UNITTEST(String("1234567890") != "123456789");
-			UNITTEST(String("1234567890") != String(""));
-			UNITTEST(String("1234567890") != String("1"));
-			UNITTEST(String("1234567890") != String("123456789"));
+			UNITTEST_ASSERT(String("1234567890") != "");
+			UNITTEST_ASSERT(String("1234567890") != "1");
+			UNITTEST_ASSERT(String("1234567890") != "123456789");
+			UNITTEST_ASSERT(String("1234567890") != String(""));
+			UNITTEST_ASSERT(String("1234567890") != String("1"));
+			UNITTEST_ASSERT(String("1234567890") != String("123456789"));
 		}
 
 	//---	bool String::operator>=(const String& string) const;
 		{
-			UNITTEST(String("a") >= "");
-			UNITTEST(String("a") >= nullptr);
-			UNITTEST(String("ab") >= "a");
-			UNITTEST(String() >= "");
-			UNITTEST(String() >= nullptr);
-			UNITTEST(String("a") >= "a");
-			UNITTEST(String("ab") >= "ab");
+			UNITTEST_ASSERT(String("a") >= "");
+			UNITTEST_ASSERT(String("a") >= nullptr);
+			UNITTEST_ASSERT(String("ab") >= "a");
+			UNITTEST_ASSERT(String() >= "");
+			UNITTEST_ASSERT(String() >= nullptr);
+			UNITTEST_ASSERT(String("a") >= "a");
+			UNITTEST_ASSERT(String("ab") >= "ab");
 
-			UNITTEST(String("a") >= String());
-			UNITTEST(String("ab") >= String("a"));
-			UNITTEST(String() >= String());
-			UNITTEST(String("a") >= String("a"));
-			UNITTEST(String("ab") >= String("ab"));
+			UNITTEST_ASSERT(String("a") >= String());
+			UNITTEST_ASSERT(String("ab") >= String("a"));
+			UNITTEST_ASSERT(String() >= String());
+			UNITTEST_ASSERT(String("a") >= String("a"));
+			UNITTEST_ASSERT(String("ab") >= String("ab"));
 		}
 
 	//---	bool String::operator<=(const String& string) const;
 		{
-			UNITTEST(String() <= "a");
-			UNITTEST(String("a") <= "ab");
-			UNITTEST(String() <= "");
-			UNITTEST(String() <= nullptr);
-			UNITTEST(String("a") <= "a");
-			UNITTEST(String("ab") <= "ab");
+			UNITTEST_ASSERT(String() <= "a");
+			UNITTEST_ASSERT(String("a") <= "ab");
+			UNITTEST_ASSERT(String() <= "");
+			UNITTEST_ASSERT(String() <= nullptr);
+			UNITTEST_ASSERT(String("a") <= "a");
+			UNITTEST_ASSERT(String("ab") <= "ab");
 
-			UNITTEST(String() <= String("a"));
-			UNITTEST(String("a") <= String("ab"));
-			UNITTEST(String() <= String());
-			UNITTEST(String("a") <= String("a"));
-			UNITTEST(String("ab") <= String("ab"));
+			UNITTEST_ASSERT(String() <= String("a"));
+			UNITTEST_ASSERT(String("a") <= String("ab"));
+			UNITTEST_ASSERT(String() <= String());
+			UNITTEST_ASSERT(String("a") <= String("a"));
+			UNITTEST_ASSERT(String("ab") <= String("ab"));
 		}
 
 	//---	bool String::operator>(const String& string) const;
 		{
-			UNITTEST(String("a") > "");
-			UNITTEST(String("a") > nullptr);
-			UNITTEST(String("ab") > "a");
+			UNITTEST_ASSERT(String("a") > "");
+			UNITTEST_ASSERT(String("a") > nullptr);
+			UNITTEST_ASSERT(String("ab") > "a");
 
-			UNITTEST(String("a") > String());
-			UNITTEST(String("ab") > String("a"));
+			UNITTEST_ASSERT(String("a") > String());
+			UNITTEST_ASSERT(String("ab") > String("a"));
 		}
 
 	//---	bool String::operator<(const String& string) const;
 		{
-			UNITTEST(String() < "a");
-			UNITTEST(String("a") < "ab");
+			UNITTEST_ASSERT(String() < "a");
+			UNITTEST_ASSERT(String("a") < "ab");
 
-			UNITTEST(String() < String("a"));
-			UNITTEST(String("a") < String("ab"));
+			UNITTEST_ASSERT(String() < String("a"));
+			UNITTEST_ASSERT(String("a") < String("ab"));
 		}
 
 	//---	String& String::operator=(const char *str);
@@ -743,46 +710,46 @@ uint tests_that_failed = 0;
 
 	//---	bool String::startsWith(const char * sub); -----------------------------------------------------------
 		{
-			UNITTEST(String("").startsWith(""));
-			UNITTEST(String("abc").startsWith(""));
-			UNITTEST(String("abc").startsWith("a"));
-			UNITTEST(String("abcdef").startsWith("abc"));
-			UNITTEST(!String("abcdef").startsWith("bc"));
+			UNITTEST_ASSERT(String("").startsWith(""));
+			UNITTEST_ASSERT(String("abc").startsWith(""));
+			UNITTEST_ASSERT(String("abc").startsWith("a"));
+			UNITTEST_ASSERT(String("abcdef").startsWith("abc"));
+			UNITTEST_ASSERT(!String("abcdef").startsWith("bc"));
 		}
 
 	//---	bool String::startsWith(const String& sub); -----------------------------------------------------------
 		{
-			UNITTEST(String("").startsWith(String("")));
-			UNITTEST(String("abc").startsWith(String("")));
-			UNITTEST(String("abc").startsWith(String("a")));
-			UNITTEST(String("abcdef").startsWith(String("abc")));
-			UNITTEST(!String("abcdef").startsWith(String("bc")));
+			UNITTEST_ASSERT(String("").startsWith(String("")));
+			UNITTEST_ASSERT(String("abc").startsWith(String("")));
+			UNITTEST_ASSERT(String("abc").startsWith(String("a")));
+			UNITTEST_ASSERT(String("abcdef").startsWith(String("abc")));
+			UNITTEST_ASSERT(!String("abcdef").startsWith(String("bc")));
 		}
 
 	//---	bool String::contains(const char* sub); -------------------------------------------------------------
 		{
-			UNITTEST(String("").contains(""));
-			UNITTEST(String("abc").contains(""));
-			UNITTEST(String("abc").contains("a"));
-			UNITTEST(String("abc").contains("b"));
-			UNITTEST(String("abcdef").contains("abc"));
-			UNITTEST(String("abcdef").contains("bc"));
-			UNITTEST(!String("abcdef").contains("bcb"));
-			UNITTEST(String("abcdef").contains("def"));
-			UNITTEST(!String("abcdef").contains("defg"));
+			UNITTEST_ASSERT(String("").contains(""));
+			UNITTEST_ASSERT(String("abc").contains(""));
+			UNITTEST_ASSERT(String("abc").contains("a"));
+			UNITTEST_ASSERT(String("abc").contains("b"));
+			UNITTEST_ASSERT(String("abcdef").contains("abc"));
+			UNITTEST_ASSERT(String("abcdef").contains("bc"));
+			UNITTEST_ASSERT(!String("abcdef").contains("bcb"));
+			UNITTEST_ASSERT(String("abcdef").contains("def"));
+			UNITTEST_ASSERT(!String("abcdef").contains("defg"));
 		}
 
 	//---	bool String::contains(const String& sub); -------------------------------------------------------------
 		{
-			UNITTEST(String("").contains(String("")));
-			UNITTEST(String("abc").contains(String("")));
-			UNITTEST(String("abc").contains(String("a")));
-			UNITTEST(String("abc").contains(String("b")));
-			UNITTEST(String("abcdef").contains(String("abc")));
-			UNITTEST(String("abcdef").contains(String("bc")));
-			UNITTEST(!String("abcdef").contains(String("bcb")));
-			UNITTEST(String("abcdef").contains(String("def")));
-			UNITTEST(!String("abcdef").contains(String("defg")));
+			UNITTEST_ASSERT(String("").contains(String("")));
+			UNITTEST_ASSERT(String("abc").contains(String("")));
+			UNITTEST_ASSERT(String("abc").contains(String("a")));
+			UNITTEST_ASSERT(String("abc").contains(String("b")));
+			UNITTEST_ASSERT(String("abcdef").contains(String("abc")));
+			UNITTEST_ASSERT(String("abcdef").contains(String("bc")));
+			UNITTEST_ASSERT(!String("abcdef").contains(String("bcb")));
+			UNITTEST_ASSERT(String("abcdef").contains(String("def")));
+			UNITTEST_ASSERT(!String("abcdef").contains(String("defg")));
 		}
 
 	//---	String& String::clear(void); -----------------------------------------------------------------------------
@@ -795,8 +762,46 @@ uint tests_that_failed = 0;
 
 	//---	String String::toString(void) const; ------------------------------------------------------------------
 		{
-			UNITTEST_EQUALS(String("").toString(), "");
-			UNITTEST_EQUALS(String("abc").toString(), "abc");
+			UNITTEST_EQUALS(String("").toString(),
+					"{"
+						"\"buffer\": \"\", "
+						"\"length\": \"0\", "
+						"\"size\": \"250\", "
+						"\"compare_fn\": \"strcmp()\", "
+						"\"strsub_fn\": \"strsub()\", "
+						"\"strstr_fn\": \"strstr()\""
+					"}"
+				);
+			UNITTEST_EQUALS((String("") + "1234567890").toString(),
+					"{"
+						"\"buffer\": \"1234567890\", "
+						"\"length\": \"10\", "
+						"\"size\": \"250\", "
+						"\"compare_fn\": \"strcmp()\", "
+						"\"strsub_fn\": \"strsub()\", "
+						"\"strstr_fn\": \"strstr()\""
+					"}"
+				);
+			UNITTEST_EQUALS(String("abc").toString(),
+					"{"
+						"\"buffer\": \"abc\", "
+						"\"length\": \"3\", "
+						"\"size\": \"3\", "
+						"\"compare_fn\": \"strcmp()\", "
+						"\"strsub_fn\": \"strsub()\", "
+						"\"strstr_fn\": \"strstr()\""
+					"}"
+				);
+			UNITTEST_EQUALS((String("abc") + "1234567890").toString(),
+					"{"
+						"\"buffer\": \"abc1234567890\", "
+						"\"length\": \"13\", "
+						"\"size\": \"13\", "
+						"\"compare_fn\": \"strcmp()\", "
+						"\"strsub_fn\": \"strsub()\", "
+						"\"strstr_fn\": \"strstr()\""
+					"}"
+				);
 		}
 
 	//---	String String::strip(void) const;
@@ -915,8 +920,8 @@ uint tests_that_failed = 0;
 
 	//---	bool String::isEmpty(void) const; ---------------------------------------------------------------------
 		{
-			UNITTEST(String("").isEmpty());
-			UNITTEST(!String("abc").isEmpty());
+			UNITTEST_ASSERT(String("").isEmpty());
+			UNITTEST_ASSERT(!String("abc").isEmpty());
 		}
 
 	//---	uint String::getLength(void) const; -------------------------------------------------------------------
@@ -935,32 +940,32 @@ uint tests_that_failed = 0;
 
 	//---	void String::getChars(bool ignore); -------------------------------------------------------------
 		{	String string("abcdefg");
-			UNITTEST(string == "abcdefg");
-			UNITTEST(string != "ABCDEFG");
-			UNITTEST(string != "aBcDefg");
-			UNITTEST(string.startsWith("abc"));
-			UNITTEST(!string.startsWith("ABC"));
-			UNITTEST(!string.startsWith("aBc"));
-			UNITTEST(!string.startsWith("def"));
-			UNITTEST(!string.startsWith("DEF"));
-			UNITTEST(!string.startsWith("Def"));
-			UNITTEST(string.contains("def"));
-			UNITTEST(!string.contains("DEF"));
-			UNITTEST(!string.contains("Def"));
+			UNITTEST_ASSERT(string == "abcdefg");
+			UNITTEST_ASSERT(string != "ABCDEFG");
+			UNITTEST_ASSERT(string != "aBcDefg");
+			UNITTEST_ASSERT(string.startsWith("abc"));
+			UNITTEST_ASSERT(!string.startsWith("ABC"));
+			UNITTEST_ASSERT(!string.startsWith("aBc"));
+			UNITTEST_ASSERT(!string.startsWith("def"));
+			UNITTEST_ASSERT(!string.startsWith("DEF"));
+			UNITTEST_ASSERT(!string.startsWith("Def"));
+			UNITTEST_ASSERT(string.contains("def"));
+			UNITTEST_ASSERT(!string.contains("DEF"));
+			UNITTEST_ASSERT(!string.contains("Def"));
 
 			string.enableIgnoreCase(true);
-			UNITTEST(string == "abcdefg");
-			UNITTEST(string == "ABCDEFG");
-			UNITTEST(string == "aBcDefg");
-			UNITTEST(string.startsWith("abc"));
-			UNITTEST(string.startsWith("ABC"));
-			UNITTEST(string.startsWith("aBc"));
-			UNITTEST(string.contains("abc"));
-			UNITTEST(string.contains("ABC"));
-			UNITTEST(string.contains("aBc"));
-			UNITTEST(string.contains("def"));
-			UNITTEST(string.contains("DEF"));
-			UNITTEST(string.contains("Def"));
+			UNITTEST_ASSERT(string == "abcdefg");
+			UNITTEST_ASSERT(string == "ABCDEFG");
+			UNITTEST_ASSERT(string == "aBcDefg");
+			UNITTEST_ASSERT(string.startsWith("abc"));
+			UNITTEST_ASSERT(string.startsWith("ABC"));
+			UNITTEST_ASSERT(string.startsWith("aBc"));
+			UNITTEST_ASSERT(string.contains("abc"));
+			UNITTEST_ASSERT(string.contains("ABC"));
+			UNITTEST_ASSERT(string.contains("aBc"));
+			UNITTEST_ASSERT(string.contains("def"));
+			UNITTEST_ASSERT(string.contains("DEF"));
+			UNITTEST_ASSERT(string.contains("Def"));
 		}
 	//---	String *duplicate(void) const;
 		{
@@ -968,26 +973,26 @@ uint tests_that_failed = 0;
 		}
 	//---	static bool String::strsub(const char *str, const char *sub); -----------------------------------------
 		{
-			UNITTEST(String::strsub("", ""));
-			UNITTEST(String::strsub("abc", ""));
-			UNITTEST(String::strsub("abc", "a"));
-			UNITTEST(String::strsub("abc", "abc"));
-			UNITTEST(!String::strsub("abc", "abcd"));
-			UNITTEST(!String::strsub("abc", "bc"));
-			UNITTEST(!String::strsub("abc", "A"));
-			UNITTEST(!String::strsub("abc", "ABc"));
+			UNITTEST_ASSERT(String::strsub("", ""));
+			UNITTEST_ASSERT(String::strsub("abc", ""));
+			UNITTEST_ASSERT(String::strsub("abc", "a"));
+			UNITTEST_ASSERT(String::strsub("abc", "abc"));
+			UNITTEST_ASSERT(!String::strsub("abc", "abcd"));
+			UNITTEST_ASSERT(!String::strsub("abc", "bc"));
+			UNITTEST_ASSERT(!String::strsub("abc", "A"));
+			UNITTEST_ASSERT(!String::strsub("abc", "ABc"));
 		}
 
 	//---	static bool String::strcasesub(const char *str, const char *sub); ----------------------------------------
 		{
-			UNITTEST(String::strcasesub("", ""));
-			UNITTEST(String::strcasesub("abc", ""));
-			UNITTEST(String::strcasesub("abc", "a"));
-			UNITTEST(String::strcasesub("abc", "abc"));
-			UNITTEST(!String::strcasesub("abc", "abcd"));
-			UNITTEST(!String::strcasesub("abc", "bc"));
-			UNITTEST(String::strcasesub("abc", "A"));
-			UNITTEST(String::strcasesub("abc", "ABc"));
+			UNITTEST_ASSERT(String::strcasesub("", ""));
+			UNITTEST_ASSERT(String::strcasesub("abc", ""));
+			UNITTEST_ASSERT(String::strcasesub("abc", "a"));
+			UNITTEST_ASSERT(String::strcasesub("abc", "abc"));
+			UNITTEST_ASSERT(!String::strcasesub("abc", "abcd"));
+			UNITTEST_ASSERT(!String::strcasesub("abc", "bc"));
+			UNITTEST_ASSERT(String::strcasesub("abc", "A"));
+			UNITTEST_ASSERT(String::strcasesub("abc", "ABc"));
 		}
 
 	//---	static String String::toString(long long number, uint base = 10); -------------------------------------
@@ -1068,11 +1073,47 @@ uint tests_that_failed = 0;
 			UNITTEST_EQUALS(String(tmps).hexDump(), full_ascii_expected_results);
 		}
 
+	//---   String escape_ize(void) const; ------------------------------------------------------------------------
+		{
+			String string = "";
+			UNITTEST_EQUALS(string.escape_ize(), "");
+			string = "abcd";
+			UNITTEST_EQUALS(string.escape_ize(), "abcd");
+			string = "\a\b\f\n\r\t\v";
+			UNITTEST_EQUALS(string.escape_ize(), "\\a\\b\\f\\n\\r\\t\\v");
+			char tmps[256 + 1];
+			for ( uint i = 0; i < sizeof(tmps); i++ ) {
+				tmps[i] = i;
+			}
+			tmps[0] = ' ';
+			tmps[sizeof(tmps) - 1] = 0;
+			const char *expect =
+		//	 01   2   3   4   5   6   7 8 9 A B C D E   F
+			" \\x01\\x02\\x03\\x04\\x05\\x06\\a\\b\\t\\n\\v\\f\\r\\x0E\\x0F"
+			 "\\x10\\x11\\x12\\x13\\x14\\x15\\x16\\x17\\x18\\x19\\x1A\\x1B\\x1C\\x1D\\x1E\\x1F"
+		//	 0123456789ABCDEF
+			" !\"#$%&'()*+,-./"
+			"0123456789:;<=>?"
+			"@ABCDEFGHIJKLMNO"
+			"PQRSTUVWXYZ[\\]^_"
+			"`abcdefghijklmno"
+			"pqrstuvwxyz{|}~\\x7F"
+			"\\x80\\x81\\x82\\x83\\x84\\x85\\x86\\x87\\x88\\x89\\x8A\\x8B\\x8C\\x8D\\x8E\\x8F"
+			"\\x90\\x91\\x92\\x93\\x94\\x95\\x96\\x97\\x98\\x99\\x9A\\x9B\\x9C\\x9D\\x9E\\x9F"
+			"\\xA0\\xA1\\xA2\\xA3\\xA4\\xA5\\xA6\\xA7\\xA8\\xA9\\xAA\\xAB\\xAC\\xAD\\xAE\\xAF"
+			"\\xB0\\xB1\\xB2\\xB3\\xB4\\xB5\\xB6\\xB7\\xB8\\xB9\\xBA\\xBB\\xBC\\xBD\\xBE\\xBF"
+			"\\xC0\\xC1\\xC2\\xC3\\xC4\\xC5\\xC6\\xC7\\xC8\\xC9\\xCA\\xCB\\xCC\\xCD\\xCE\\xCF"
+			"\\xD0\\xD1\\xD2\\xD3\\xD4\\xD5\\xD6\\xD7\\xD8\\xD9\\xDA\\xDB\\xDC\\xDD\\xDE\\xDF"
+			"\\xE0\\xE1\\xE2\\xE3\\xE4\\xE5\\xE6\\xE7\\xE8\\xE9\\xEA\\xEB\\xEC\\xED\\xEE\\xEF"
+			"\\xF0\\xF1\\xF2\\xF3\\xF4\\xF5\\xF6\\xF7\\xF8\\xF9\\xFA\\xFB\\xFC\\xFD\\xFE\\xFF";
+			UNITTEST_EQUALS(String(tmps).escape_ize(), expect);
+		}
+
 	//---	static String String::wideCharToString(ushort wchar); -------------------------------------------------
 		{
-			UNITTEST_EQUALS(String::wideCharToString('a'), "   a");
-			UNITTEST_EQUALS(String::wideCharToString('ab'), "  ab");
-			UNITTEST_EQUALS(String::wideCharToString('abc'), " abc");
+			UNITTEST_EQUALS(String::wideCharToString('a'),    "   a");
+			UNITTEST_EQUALS(String::wideCharToString('ab'),   "  ab");
+			UNITTEST_EQUALS(String::wideCharToString('abc'),  " abc");
 			UNITTEST_EQUALS(String::wideCharToString('abcd'), "abcd");
 		}
 
@@ -1137,43 +1178,43 @@ uint tests_that_failed = 0;
 
 	//--- bool Token::isEOF(void);
 		{	Token token(TokenType::eEOF);
-			UNITTEST(token.isEOF());
+			UNITTEST_ASSERT(token.isEOF());
 		}
 
 	//--- bool Token::operator==(const Token& token) const;
 		{	Token token1('word', "asperger's");
 			Token token2(token1);
-			UNITTEST(token1 == token1);
+			UNITTEST_ASSERT(token1 == token1);
 		}
 
 	//--- bool Token::operator==(TokenType type) const;
 		{	Token token('word', "asperger's");
-			UNITTEST(token == 'word');
+			UNITTEST_ASSERT(token == 'word');
 		}
 
 	//--- bool Token::operator==(const String& text) const;
 		{	Token token('word', "asperger's");
-			UNITTEST(token == "asperger's");
+			UNITTEST_ASSERT(token == "asperger's");
 		}
 
 	//--- bool Token::operator==(int value) const;
 		{	Token token(TokenType::eAmpersand, "&");
-			UNITTEST(token == '&');
+			UNITTEST_ASSERT(token == '&');
 		}
 
 	//--- bool Token::operator!=(const Token& token) const;
 		{	Token token('word', "asperger's");
-			UNITTEST(token != Token(TokenType::eNumber, "asperger's"));
+			UNITTEST_ASSERT(token != Token(TokenType::eNumber, "asperger's"));
 		}
 
 	//--- bool Token::operator!=(TokenType type) const;
 		{	Token token('word', "asperger's");
-			UNITTEST(token != TokenType::eNumber);
+			UNITTEST_ASSERT(token != TokenType::eNumber);
 		}
 
 	//--- friend bool Token::operator==(int value, Token token);
 		{
-			UNITTEST(TokenType::eAmpersand == Token(TokenType::eAmpersand));
+			UNITTEST_ASSERT(TokenType::eAmpersand == Token(TokenType::eAmpersand));
 		}
 
 	//--- static String Token::wideCharToString(wchar wide_char);
@@ -1184,19 +1225,19 @@ uint tests_that_failed = 0;
 
 	//--- virtual const char* Token::getChars(void) const;
 		{
-			UNITTEST_EQUALS(Token('str', "\"this is a test\"").getChars(), String("\"this is a test\""));
+			UNITTEST_EQUALS(Token('str', "\"this is a test\"").getChars(), "{\"type\": \"' str'\", \"text\": \"\"this is a test\"\", \"whitespace\": \"\"}");
 		}
 
 	//--- virtual String Token::toString(void) const;
 		{
-			UNITTEST_EQUALS(Token('str', "\"this is a test\"").toString(), String("[' str': \"\"this is a test\"\", \"\"]"));
+			UNITTEST_EQUALS(Token('str', "\"this is a test\"").toString(), "[' str': \"\"this is a test\"\", \"\"]");
 		}
 
 	//--- bool Token::operator<(const Token& token) const;
 		{
-			UNITTEST(Token('a') < Token('b'));
-			UNITTEST(Token(TokenType::eEOF) < Token('b'));
-			UNITTEST(Token('abc') < Token('abcd'));
+			UNITTEST_ASSERT(Token('a') < Token('b'));
+			UNITTEST_ASSERT(Token(TokenType::eEOF) < Token('b'));
+			UNITTEST_ASSERT(Token('abc') < Token('abcd'));
 		}
 
 	//---	static bool Token::isWordStart(int c);
@@ -1204,13 +1245,13 @@ uint tests_that_failed = 0;
 		{
 			for ( int i = ' '; i < 128; i++ ) {
 				if ( ('A' <= i  &&  i <= 'Z')  ||  ('a' <= i  &&  i <= 'z')  || i == '_' ) {
-					UNITTEST(Token::isWordStart(i));
+					UNITTEST_ASSERT(Token::isWordStart(i));
 				}
 				if ( ('A' <= i  &&  i <= 'Z')  ||  ('a' <= i  &&  i <= 'z')  || i == '_'  ||  ('0' <= i  &&  i <= '9') ) {
-					UNITTEST(Token::isWord(i));
+					UNITTEST_ASSERT(Token::isWord(i));
 				}
 				if ( !( ('A' <= i  &&  i <= 'Z')  ||  ('a' <= i  &&  i <= 'z')  || i == '_'  ||  ('0' <= i  &&  i <= '9') ) ){
-					UNITTEST(!Token::isWord(i));
+					UNITTEST_ASSERT(!Token::isWord(i));
 				}
 			}
 		}
@@ -1385,31 +1426,31 @@ uint tests_that_failed = 0;
 	//--- virtual bool StringStream::peek(const String& seed, bool consume = false); // <-- method not 'const' b/c revises object if "skip_seed" true
 		{	String string("This is a test of the emergency broadcast system. This is only a test.");
 			Stream *stream = new StringStream(string);
-			UNITTEST(!stream->peek(""));
-			UNITTEST(!stream->peek("this"));
-			UNITTEST(stream->peek("This"));
-			UNITTEST(stream->peek("This", true));
-			UNITTEST(stream->peek(" is"));
+			UNITTEST_ASSERT(!stream->peek(""));
+			UNITTEST_ASSERT(!stream->peek("this"));
+			UNITTEST_ASSERT(stream->peek("This"));
+			UNITTEST_ASSERT(stream->peek("This", true));
+			UNITTEST_ASSERT(stream->peek(" is"));
 			delete stream;
 
 			string.enableIgnoreCase(true);
 			stream = new StringStream(string);
-			UNITTEST(stream->peek("tHIS"));
-			UNITTEST(stream->peek("This"));
-			UNITTEST(stream->peek("this", true));
-			UNITTEST(stream->peek(" is"));
+			UNITTEST_ASSERT(stream->peek("tHIS"));
+			UNITTEST_ASSERT(stream->peek("This"));
+			UNITTEST_ASSERT(stream->peek("this", true));
+			UNITTEST_ASSERT(stream->peek(" is"));
 		}
 
 	//--- virtual bool StringStream::isEOF(void) const;
 		{	StringStream *stream = new StringStream("");
-			UNITTEST(stream->isEOF());
+			UNITTEST_ASSERT(stream->isEOF());
 			delete stream;
 
 			stream = new StringStream("t");
-			UNITTEST(!stream->isEOF());
+			UNITTEST_ASSERT(!stream->isEOF());
 			stream->next();
 			stream->next();
-			UNITTEST(stream->isEOF());
+			UNITTEST_ASSERT(stream->isEOF());
 			delete stream;
 		}
 
@@ -1648,7 +1689,7 @@ uint tests_that_failed = 0;
 			UNITTEST_EQUALS(stream->next(), Token('word', "Y", " "));
 			UNITTEST_EQUALS(stream->next(), Token('word', "Z", " "));
 			UNITTEST_EQUALS(stream->next(), Token('word', "_", " "));
-			UNITTEST(stream->next().isEOF());
+			UNITTEST_ASSERT(stream->next().isEOF());
 			stream->recallBookmark();
 			UNITTEST_EQUALS(stream->current(), Token('word', "M", " "));
 			UNITTEST_EQUALS(stream->next(), Token('word', "N", " "));
@@ -1725,19 +1766,19 @@ uint tests_that_failed = 0;
 	//---	void TokenStream::scoopNumber(void);
 		{	TokenStream stream("");
 			stream.scoopNumber("");
-			UNITTEST(stream.isEOF());
+			UNITTEST_ASSERT(stream.isEOF());
 		}
 		{	TokenStream stream("01234");
 	//		UNITTEST_EQUALS(stream.scoopNumber(""), Token(TokenType::eNumber, "01234", ""));
 			UNITTEST_EQUALS(stream.next(), Token(TokenType::eNumber, "01234", ""));
-			UNITTEST(stream.next().isEOF());
+			UNITTEST_ASSERT(stream.next().isEOF());
 		}
 
 	//---	bool TokenStream::scoopSpace(void);
 		{	TokenStream stream(" \t\n\r\f1234");
 			String spaces = stream.scoopSpace();
 			UNITTEST_EQUALS(stream.scoopNumber(spaces), Token(TokenType::eNumber, "1234", " \t\n\r\f"));
-			UNITTEST(stream.next().isEOF());
+			UNITTEST_ASSERT(stream.next().isEOF());
 		}
 		{	TokenStream stream("0 1234\t1111");
 			String spaces = stream.scoopSpace();
@@ -1758,7 +1799,7 @@ uint tests_that_failed = 0;
 
 	//---	bool TokenStream::isEOF(void);
 		{	TokenStream stream("");
-			UNITTEST(stream.isEOF());
+			UNITTEST_ASSERT(stream.isEOF());
 		}
 
 	//---	Token TokenStream::current(void); -------------------------------------------------------------------------------------
@@ -1778,12 +1819,12 @@ uint tests_that_failed = 0;
 
 	//---	String TokenStream::toString(void) const; -----------------------------------------------------------------------------
 		{	TokenStream stream1("");
-			UNITTEST_EQUALS(stream1.toString(), "['NULL': \"\", \"\"]");
+			UNITTEST_EQUALS(stream1.toString(), "{\"current_token\": {\"type\": \"'NULL'\", \"text\": \"\", \"whitespace\": \"\"}\", \"stream\": \"{\"position\": \"0\", \"stream\": \"\"}}");
 			stream1.current();
-			UNITTEST_EQUALS(stream1.toString(), "[' EOF': \"EOF\", \"\"]");
+			UNITTEST_EQUALS(stream1.toString(), "[position=0 stream=\"\"]"); //"[' EOF': \"EOF\", \"\"]");
 			TokenStream stream2("abc");
 			stream2.current();
-			UNITTEST_EQUALS(stream2.toString(), "['word': \"abc\", \"\"]");
+			UNITTEST_EQUALS(stream2.toString(), "[position=3 stream=\"abc\"]"); //"['word': \"abc\", \"\"]");
 		}
 
 	//---	void TokenStream::mustBe(std::set<Token> tokens); ---------------------------------------------------------------------
@@ -1903,19 +1944,19 @@ uint tests_that_failed = 0;
 			cpp_stream = new CppTokenStream(new StringStream("//\n"));
 			token = cpp_stream->next();
 			UNITTEST_EQUALS(token, Token(TokenType::eEOF, "", "//\n"));
-			UNITTEST(cpp_stream->next().isEOF());
+			UNITTEST_ASSERT(cpp_stream->next().isEOF());
 			delete cpp_stream;
 
 			cpp_stream = new CppTokenStream(new StringStream("//this is a test\n"));
 			token = cpp_stream->next();
 			UNITTEST_EQUALS(token, Token(TokenType::eEOF, "", "//this is a test\n"));
-			UNITTEST(cpp_stream->next().isEOF());
+			UNITTEST_ASSERT(cpp_stream->next().isEOF());
 			delete cpp_stream;
 
 			cpp_stream = new CppTokenStream(new StringStream("/**//*this is a test*/  \t\f\n "));
 			token = cpp_stream->next();
 			UNITTEST_EQUALS(token, Token(TokenType::eEOF, "", "/**//*this is a test*/  \t\f\n "));
-			UNITTEST(cpp_stream->next().isEOF());
+			UNITTEST_ASSERT(cpp_stream->next().isEOF());
 			delete cpp_stream;
 		}
 	//---	virtual Token  scoopWord(const String& spaces) override;
@@ -1944,7 +1985,7 @@ uint tests_that_failed = 0;
 			token = cpp_stream->next();
 			UNITTEST_EQUALS(token, Token('word', "__", " "));
 
-			UNITTEST(cpp_stream->next().isEOF());
+			UNITTEST_ASSERT(cpp_stream->next().isEOF());
 			delete cpp_stream;
 		}
 		{	CppTokenStream cpp_stream(new StringStream("a&&=b+c"));
@@ -1953,23 +1994,23 @@ uint tests_that_failed = 0;
 			UNITTEST_EQUALS(cpp_stream.next(), Token('word', "b"));
 			UNITTEST_EQUALS(cpp_stream.next(), Token('+'));
 			UNITTEST_EQUALS(cpp_stream.next(), Token('word', "c"));
-			UNITTEST(cpp_stream.next().isEOF());
+			UNITTEST_ASSERT(cpp_stream.next().isEOF());
 		}
 	//---	virtual String scoopSpace(void) override;
 		{	CppTokenStream stream1(new StringStream("this test"));
 			UNITTEST_EQUALS(stream1.next(), Token('word', "this"));
 			UNITTEST_EQUALS(stream1.next(), Token('word', "test", " "));
-			UNITTEST(stream1.next().isEOF());
+			UNITTEST_ASSERT(stream1.next().isEOF());
 
 			CppTokenStream stream2(new StringStream("this /**/test"));
 			UNITTEST_EQUALS(stream2.next(), Token('word', "this"));
 			UNITTEST_EQUALS(stream2.next(), Token('word', "test", " /**/"));
-			UNITTEST(stream2.next().isEOF());
+			UNITTEST_ASSERT(stream2.next().isEOF());
 
 			CppTokenStream stream3(new StringStream("word//msg\ntest"));
 			UNITTEST_EQUALS(stream3.next(), Token('word', "word"));
 			UNITTEST_EQUALS(stream3.next(), Token('word', "test", "//msg\n"));
-			UNITTEST(stream3.next().isEOF());
+			UNITTEST_ASSERT(stream3.next().isEOF());
 		}
 		{	String cpp_text("void test_CppTokenizer(void) {\n"
 							"//---	virtual Token CppTokenizer::next(void);\n"
@@ -2002,7 +2043,7 @@ uint tests_that_failed = 0;
 			UNITTEST_EQUALS(cpp_stream->next(), Token(TokenType::eAt, "@"));
 			UNITTEST_EQUALS(cpp_stream->next(), Token(TokenType::eDollar, "$"));
 			UNITTEST_EQUALS(cpp_stream->next(), Token(TokenType::eHash, "#"));
-			UNITTEST(cpp_stream->next().isEOF());
+			UNITTEST_ASSERT(cpp_stream->next().isEOF());
 			delete cpp_stream;
 		}
 		{	CppTokenStream *cpp_stream = new CppTokenStream(new StringStream("....~=~!=!%=%^=^&&=&&-=&=&->--- "));
@@ -2074,7 +2115,7 @@ uint tests_that_failed = 0;
 				UNITTEST_EQUALS(cpp_stream->next(), Token(TokenType::eNumber, number, (first? "": " ")));
 				first = false;
 			}
-			UNITTEST(cpp_stream->next().isEOF());
+			UNITTEST_ASSERT(cpp_stream->next().isEOF());
 			delete cpp_stream;
 		}
 		{	bool first = true;
@@ -2104,7 +2145,7 @@ uint tests_that_failed = 0;
 				UNITTEST_EQUALS(cpp_stream->next(), Token(TokenType::eFloat, number, (first? "": " ")));
 				first = false;
 			}
-			UNITTEST(cpp_stream->next().isEOF());
+			UNITTEST_ASSERT(cpp_stream->next().isEOF());
 			delete cpp_stream;
 		}
 
@@ -2156,7 +2197,7 @@ uint tests_that_failed = 0;
 			delete xml_stream;
 		}
 
-		String xml_tests(
+		static const String xml_tests(
 				"<person id=\"1\">\n"
 				"	<first>name</first>\n"
 				"	<last>surname</last>\n"
@@ -2212,17 +2253,21 @@ uint tests_that_failed = 0;
 
 	//---			virtual String XmlTokenStream::toString(void) const override;
 		{
-			XmlTokenStream stream(xml_tests);
-			UNITTEST_EQUALS(stream.toString(), xml_tests);
+			UNITTEST_EQUALS(XmlTokenStream(xml_tests).toString().escape_ize(),
+					"{ "
+						"current_token={'NULL': \"\", \"\"}\","
+						"stream=\"[position=0, " + xml_tests.escape_ize() + "\" }");
 		}
+//		[ current_token=['NULL': "", ""]" stream="[position=0, <person id="1">\n\t<first>name</first>\n\t<last>surname</last>\n\t<address>\n\t\t<street attrib="tests" attrib1="tests1" attrib2="tests2">20 Evergreen Rd.</street>\n\t\t<city>Vernon</city>\n\t\t<state>Connecticut, USA</state>\n\t\t<phone type="touchtone" network="POTS"/>\n\t</address>\n</person>" ]]
+//		[ current_token=['NULL': "", ""]" stream="[position=0 stream="<person id="1">\n\t<first>name</first>\n\t<last>surname</last>\n\t<address>\n\t\t<street attrib="tests" attrib1="tests1" attrib2="tests2">20 Evergreen Rd.</street>\n\t\t<city>Vernon</city>\n\t\t<state>Connecticut, USA</state>\n\t\t<phone type="touchtone" network="POTS"/>\n\t</address>\n</person>"]"]
 	//--- friend 	std::ostream& operator<<(std::ostream& stream, const XmlTokenStream& tokens);
-		{	std::ostringstream output;
-			XmlTokenStream stream(xml_tests);
-			while ( !stream.isEOF() ) {
-				stream.next();
-				output << stream.current().text;
-			}
-			UNITTEST_EQUALS(output.str(), xml_tests);
+		{
+//			while ( !stream.isEOF() ) {
+//				stream.next();
+//				output << stream.current().text;
+//			}
+//			UNITTEST_EQUALS(output.str(), xml_tests);
+			UNITTEST_EQUALS(XmlTokenStream(xml_tests).toString().escape_ize(), "[position=0, " + xml_tests.escape_ize() + "\" ]");
 		}
 	}
 

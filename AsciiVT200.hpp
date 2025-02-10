@@ -16,7 +16,7 @@ struct AsciiVT200 {
 	static constexpr const char *blackForeground = "\x1B[30m";
 	static constexpr const char *redForeground = "\x1B[31m";
 	static constexpr const char *greenForeground = "\x1B[32m";
-	static constexpr const char *yellowForeground = "\x1B[33m";
+	static constexpr const char *yellowForeground = "\x1B[93m";
 	static constexpr const char *blueForeground = "\x1B[34m";
 	static constexpr const char *magentaForeground = "\x1B[35m";
 	static constexpr const char *cyanForeground = "\x1B[36m";

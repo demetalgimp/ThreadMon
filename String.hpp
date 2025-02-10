@@ -114,6 +114,7 @@ class String;
 		public: //--- Operator overloads
 /*tested*/	String operator+(cchar *str) const;
 /*tested*/	String operator+(const String& string) const;
+			String operator+(long long num) const;
 /*tested*/	friend String operator+(cchar* str, const String& string);
 /*tested*/	char operator[](uint index) const;
 /*tested*/	bool operator==(cchar *str) const										{ return (compare_fn((cchar*)buffer, (str?: "")) == 0); }
@@ -155,10 +156,11 @@ class String;
 /*tested*/	bool isEmpty(void) const								{ return (length == 0); }
 /*tested*/	size_t getLength(void) const							{ return length; }
 /*tested*/	size_t getSize(void) const								{ return size; }
-/*??*/		String *clone(void) const 							{ return new String(*this); }
+/*??*/		String *clone(void) const 								{ return new String(*this); }
 
 /*tested*/	cchar* getChars(void) const								{ return buffer; }
-/*tested*/	String toString(void) const								{ return *this; }
+/*tested*/	String toString(void) const;
+/*tested*/	String escape_ize(void) const;
 /*tested*/	String& enableIgnoreCase(bool ignore);
 
 		public:

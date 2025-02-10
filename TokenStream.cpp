@@ -108,7 +108,8 @@
 	}
 
 	String TokenStream::toString(void) const {
-		return String::formatString("['%s': \"%s\", \"%s\"]", Token::wideCharToString(current_token.type).getChars(), current_token.text.getChars(), current_token.whitespace.getChars());
+//		return String::formatString("['%s': \"%s\", \"%s\"]", Token::wideCharToString(current_token.type).getChars(), current_token.text.getChars(), current_token.whitespace.getChars());
+		return "{\"current_token\": \"" + current_token.toString() + "\", \"stream\": \"" + stream->toString() + "\"}";
 	}
 
 	std::ostream& operator<<(std::ostream& ostream, const TokenStream& tokenstream) {

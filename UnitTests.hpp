@@ -13,10 +13,6 @@ class UnitTests {
 	typedef const char cchar;
 	typedef unsigned int uint;
 
-//	private:
-//		static void IAS_unittest(cchar *file, cchar *method, uint lineno, cchar *str_to_test, auto to_test);
-//		static void IAS_unittest_equals(cchar *file, cchar *method, uint lineno, cchar *str_output_to_test, cchar *str_expected, auto output_to_test, auto expected);
-
 	private:
 		static void test_TextAccumulator(void);
 		static void test_String(void);
