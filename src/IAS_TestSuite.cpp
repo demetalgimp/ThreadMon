@@ -1,3 +1,4 @@
+#include <regex.h>
 #include <iostream>
 #include "AsciiVT200.hpp"
 #include "IAS_TestSuite.hpp"
@@ -58,7 +59,7 @@ static String autoToString(auto var) {
 		test_number++;
 
 		String out__str = autoToString(output_to_test);
-		String exp__str = autoToString(output_to_test);
+		String exp__str = autoToString(expected);
 
 		if ( output_to_test == expected ) {
 			tests_that_passed++;
@@ -83,5 +84,42 @@ static String autoToString(auto var) {
 			std::cout
 				<< std::endl
 				<< std::flush;
+		}
+	}
+
+	void IAS_unittest_pattern(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, const String& output_to_test, const char* regex_text) {
+		test_number++;
+
+		regex_t regex_exec;
+		regmatch_t pmatch[1];
+
+		if ( regcomp(&regex_exec, regex_text, REG_NEWLINE) == 0 ) {
+
+			if ( regexec(&regex_exec, output_to_test.getChars(), 1, pmatch, 0) != 0 ) {
+				tests_that_passed++;
+				std::cout << std::flush
+					<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
+					<< "expression: " << (strchr(output_to_test.getChars(), '\n')? '\n': ' ') << output_to_test << "... PASSED.";
+				std::cout
+					<< std::endl
+					<< std::flush;
+
+			} else {
+				tests_that_failed++;
+				std::cerr << std::flush
+					<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
+					<< "expression: " << (strchr(str_output_to_test, '\n')? ":\n": " ") << str_output_to_test << "... "
+					<< AsciiVT200::redForeground << "FAILED: " << AsciiVT200::resetTerminal
+					<< "expected: ["
+					<< AsciiVT200::redForeground << (strchr(regex_text, '\n')? "\n": "") << regex_text << AsciiVT200::resetTerminal
+					<< "] but got: ["
+					<< AsciiVT200::redForeground << (strchr(output_to_test.escape_ize().getChars(), '\n')? "\n": "") << output_to_test << AsciiVT200::resetTerminal
+					<< "]";
+				std::cout
+					<< std::endl
+					<< std::flush;
+			}
+		} else {
+			//TODO
 		}
 	}

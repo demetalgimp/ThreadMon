@@ -19,6 +19,8 @@
 #include <vector>
 #include <string>
 
+#include "Klass.hpp"
+
 typedef uint8_t uchar;
 typedef uint16_t ushort;
 typedef uint32_t uint;
@@ -29,18 +31,6 @@ typedef const char cchar;
 class String;
 
 #define THROW_ERROR(fmt, ...) throw String::formatString("Error[%s:%d]:- " fmt "\n", __FILE__, __LINE__, __VA_ARGS__)
-
-	class Klass {
-		public:
-			Klass(void) {}
-			virtual ~Klass(void) {}
-
-		public:
-			virtual cchar* getChars(void) const = 0;
-			virtual String toString(void) const = 0;
-			virtual Klass *clone(void) const = 0;
-/*??*/		friend std::ostream& operator<<(std::ostream& stream, const Klass& object);
-	};
 
 	class TextAccumulator: public Klass {
 		friend class UnitTests;
@@ -72,8 +62,9 @@ class String;
 
 		public:
 /*??*/		cchar *getChars(void) const { return "TextAccumulator"; }
-/*tested*/	String toString(void) const;
-/*??*/		TextAccumulator *clone(void) const {
+			virtual String serialize(void) const override;
+/*tested*/	virtual String toString(void) const override;
+/*??*/		TextAccumulator *clone(void) const override {
 				TextAccumulator *acc = new TextAccumulator();
 				acc->current_size = current_size;
 				acc->buffer = strdup(buffer);
@@ -137,7 +128,6 @@ class String;
 /*tested*/	String& operator=(const String& string);
 /*tested*/	String& operator+=(cchar *str);
 /*tested*/	String& operator+=(const String& string);
-/*tested*/	friend std::ostream& operator<<(std::ostream& stream, const String& string);
 
 		public: //--- manipulation methods
 /*tested*/	bool startsWith(cchar* sub) const;
@@ -156,16 +146,21 @@ class String;
 /*tested*/	bool isEmpty(void) const								{ return (length == 0); }
 /*tested*/	size_t getLength(void) const							{ return length; }
 /*tested*/	size_t getSize(void) const								{ return size; }
-/*??*/		String *clone(void) const 								{ return new String(*this); }
-
 /*tested*/	cchar* getChars(void) const								{ return buffer; }
-/*tested*/	String toString(void) const;
-/*tested*/	String escape_ize(void) const;
 /*tested*/	String& enableIgnoreCase(bool ignore);
 
-		public:
+		public: // Overrides
+/*??*/		virtual String *clone(void) const override				{ return new String(*this); }
+/*tested*/	virtual String toString(void) const	override			{ return *this; }
+			virtual String serialize(void) const override;
+/*tested*/	friend std::ostream& operator<<(std::ostream& stream, const String& string);
+
+		public: // Primitives
 /*tested*/	static bool strsub(cchar *str, cchar *sub);
 /*tested*/	static bool strcasesub(cchar *str, cchar *sub);
+
+		public: // Converters
+/*tested*/	String escape_ize(void) const;
 /*tested*/	static String toString(long long number, uint base = 10);
 /*tested*/	static String formatString(const String& fmt, ...);
 /*tested*/	String hexDump(void) const;

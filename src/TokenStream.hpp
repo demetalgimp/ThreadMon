@@ -52,12 +52,13 @@
 /*tested*/	virtual Token mustBe(const Token& token);
 /*tested*/	virtual Token mayBe(const std::set<Token>& tokens);
 /*tested*/	virtual Token mayBe(const Token& token);
-/*tested*/	virtual bool  isEOF(void) 							{ return (stream->isEOF()  ||  current_token.type == eEOF); }
+/*tested*/	virtual bool  isEOF(void) const						{ return (stream->isEOF()  ||  current_token.type == eEOF); }
 
 		public: //--- Klass overrides
-/*tested*/	virtual cchar* getChars(void) const override		{ return "TokenStream"; }
-/*??*/		virtual Klass *clone(void) const				{ return new TokenStream(*this); }
-/*tested*/	virtual String toString(void) const override;
+///*tested*/	virtual cchar* getChars(void) const override		{ return "TokenStream"; }
+/*??*/		virtual Klass *clone(void) const override			{ return new TokenStream(*this); }
+/*tested*/	virtual String toString(void) const override		{ return String::formatString("[TokenStream: %llX]", this); }
+/*??*/		virtual String serialize(void) const override;
 
 		public:
 /*tested*/	friend 	std::ostream& operator<<(std::ostream& stream, const TokenStream& tokens);

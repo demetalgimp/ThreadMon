@@ -27,12 +27,16 @@
 			virtual int  back(void) = 0;
 			virtual int  current(void) = 0;
 			virtual int  next(void) = 0;
+			virtual int  peek(uint ahead = 0) const = 0;
+
+		public:
 			virtual void setBookmark(void) = 0;
 			virtual void recallBookmark(void) = 0;
-			virtual int  peek(uint ahead = 0) const = 0;
 			virtual bool peek(const String& seed, bool consume = false) = 0;
-			virtual bool isEOF(void) const = 0;
 			virtual void skip(uint chars = 1) = 0;
+
+		public:
+			virtual bool isEOF(void) const = 0;
 			virtual uint getLength(void) const = 0;
 			virtual uint getPosition(void) const = 0;
 	};

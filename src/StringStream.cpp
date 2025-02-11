@@ -62,3 +62,13 @@
 			chars--;
 		}
 	}
+
+	String StringStream::serialize(void) const	{
+		return String("{ ") +
+				"\"StringStream\": "
+					"{ "
+						"\"position\": \"" + position + "\", "
+						"\"bookmark\": \"" + bookmark + "\""
+					" }"
+				" }";
+	}

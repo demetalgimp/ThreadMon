@@ -52,6 +52,15 @@
 	String TextAccumulator::toString(void) const {
 		return buffer;
 	}
+	String TextAccumulator::serialize(void) const {
+		return String::formatString("{ "
+				"\"TextAccumulator\": { "
+					"\"current_size\": \"%d\", "
+					"\"buffer\": \"%s\", "
+					"\"position\": \"%d\" "
+				"} "
+			"}", current_size, String(buffer).escape_ize().getChars(), position);
+	}
 
 //===================================================================================================================================================
 	String::String(const char *str, size_t count): length(0), size(BUFFER_SIZE_INC) {
@@ -403,14 +412,17 @@
 		return str;
 	}
 
-	String String::toString(void) const {
-		return String( "{" ) +
-					"\"buffer\": \"" + buffer + "\", "
-					"\"length\": \"" + length + "\", "
-					"\"size\": \""   + size   + "\", "
-					"\"compare_fn\": \"" + (compare_fn == strcmp? "strcmp()": "strcasecmp()") + "\", "
-					"\"strsub_fn\": \""  + (compare_fn == strcmp? "strsub()": "strcasesub()") + "\", "
-					"\"strstr_fn\": \""  + (compare_fn == strcmp? "strstr()": "strcasestr()") + "\""
+	String String::serialize(void) const {
+		return String("{ ") +
+				"\"String\": "
+					"{"
+						"\"buffer\": \"" + buffer + "\", "
+						"\"length\": \"" + length + "\", "
+						"\"size\": \""   + size   + "\", "
+						"\"compare_fn\": \"" + (compare_fn == strcmp? "strcmp()": "strcasecmp()") + "\", "
+						"\"strsub_fn\": \""  + (compare_fn == strcmp? "strsub()": "strcasesub()") + "\", "
+						"\"strstr_fn\": \""  + (compare_fn == strcmp? "strstr()": "strcasestr()") + "\""
+					"}"
 				"}";
 	}
 

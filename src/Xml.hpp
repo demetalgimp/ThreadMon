@@ -42,10 +42,10 @@
 /*??*/		std::vector<Xml*>* operator[](const String& name);
 /*tested*/	String& operator()(const String& key);
 
-		public:
-/*??*/		virtual const char* getChars(void) const		{ return "Xml tree"; }
-/*??*/		virtual Klass *clone(void) const			{ return new Xml(*this); }
+		public: // Overrides
+/*??*/		virtual Klass *clone(void) const override		{ return new Xml(*this); }
 /*tested*/	virtual String toString(void) const override;
+/*??*/		virtual String serialize(void) const override 	{ return ""; }
 	};
 
 #endif /* XML_HPP_ */

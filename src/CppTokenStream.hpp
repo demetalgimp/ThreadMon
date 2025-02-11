@@ -26,10 +26,11 @@
 /*tested*/	virtual Token  scoopWord(const String& spaces) override;
 
 		public: //--- TokenStream overrides
-/*tested*/	virtual Token  next(void);
+/*tested*/	virtual Token  next(void) override;
 
 		public: //--- Klass overrides
-/*??*/		virtual String toString(void) const override { return "CppTokenStream: " + TokenStream::toString(); }
+/*??*/		virtual String serialize(void) const override		{ return "{ \"CppTokenStream\": " + TokenStream::serialize() + " }"; }
+			virtual String toString(void) const override		{ return String::formatString("[CppTokenStream: %llX", this); }
 	};
 
 #endif /* CPPTOKENSTREAM_HPP_ */

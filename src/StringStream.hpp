@@ -37,13 +37,17 @@
 /*tested*/	virtual int operator++(void)				{ return next(); }
 /*tested*/	virtual int operator--(void)				{ return back(); }
 
-		public:
-/*tested*/	virtual bool isEOF(void) const				{ return (position >= string.getLength()); }
-/*tested*/	virtual uint getLength(void) const			{ return string.getLength(); }
-/*tested*/	virtual uint getPosition(void) const		{ return position; }
-/*tested*/	virtual cchar* getChars(void) const			{ return string.getChars() + position; }
-/*??*/		virtual Klass *clone(void) const		{ return new StringStream(*this); }
-/*tested*/	virtual String toString(void) const			{ return String::formatString("[position=%u stream=\"%s\"]", position, string.getChars()); }
+		public: // Getters/setters
+/*tested*/	virtual bool isEOF(void) const					{ return (position >= string.getLength()); }
+/*tested*/	virtual uint getLength(void) const				{ return string.getLength(); }
+/*tested*/	virtual uint getPosition(void) const			{ return position; }
+///*tested*/	virtual cchar* getChars(void) const				{ return string.getChars() + position; }
+
+		public: //Overrides
+/*??*/		virtual Klass *clone(void) const override		{ return new StringStream(*this); }
+/*??*/		virtual String toString(void) const override	{ return String::formatString("[StringStream: %llX]", this); }
+			virtual String serialize(void) const override;
+
 /*tested*/	friend std::ostream& operator<<(std::ostream& stream, const StringStream& string) { return (stream << string.toString()); }
 	};
 

@@ -100,18 +100,24 @@
 
 //--- ERROR! Because I am using Eclipse (which has fallen from grace), moving these macros cannot be left in a header file without TONS of errors.
 #define UNITTEST_ASSERT(TO_TEST) { \
-			const char *usecase_file = __FILE__; \
-			const char *usecase_method = __FUNCTION__; \
-			uint usecase_lineno = __LINE__; \
-			IAS_unittest_assert(usecase_file, usecase_method, usecase_lineno, #TO_TEST, TO_TEST); \
-		}
+		const char *usecase_file = __FILE__; \
+		const char *usecase_method = __FUNCTION__; \
+		uint usecase_lineno = __LINE__; \
+		IAS_unittest_assert(usecase_file, usecase_method, usecase_lineno, #TO_TEST, TO_TEST); \
+	}
 
 #define UNITTEST_EQUALS(OUTPUT_TO_TEST, EXPECTED) { \
-			const char *usecase_file = __FILE__; \
-			const char *usecase_method = __FUNCTION__; \
-			uint usecase_lineno = __LINE__; \
-			IAS_unittest_equals(usecase_file, usecase_method, usecase_lineno, #OUTPUT_TO_TEST, #EXPECTED, OUTPUT_TO_TEST, EXPECTED); \
-		}
+		const char *usecase_file = __FILE__; \
+		const char *usecase_method = __FUNCTION__; \
+		uint usecase_lineno = __LINE__; \
+		IAS_unittest_equals(usecase_file, usecase_method, usecase_lineno, #OUTPUT_TO_TEST, #EXPECTED, OUTPUT_TO_TEST, EXPECTED); \
+	}
+#define UNITTEST_PATTERN(OUTPUT_TO_TEST, PATTERN) { \
+		const char *usecase_file = __FILE__; \
+		const char *usecase_method = __FUNCTION__; \
+		uint usecase_lineno = __LINE__; \
+		IAS_unittest_pattern(usecase_file, usecase_method, usecase_lineno, #OUTPUT_TO_TEST, #PATTERN, OUTPUT_TO_TEST, PATTERN); \
+	}
 
 //=== class TextAccumulator =========================================================================================================================
 	void UnitTests::test_TextAccumulator(void) {
@@ -760,49 +766,60 @@
 			UNITTEST_EQUALS(String("abc").clear().getSize(), String("").getSize());
 		}
 
-	//---	String String::toString(void) const; ------------------------------------------------------------------
+	//---	String String::serialize(void) const; ------------------------------------------------------------------
 		{
-			UNITTEST_EQUALS(String("").toString(),
-					"{"
-						"\"buffer\": \"\", "
-						"\"length\": \"0\", "
-						"\"size\": \"250\", "
-						"\"compare_fn\": \"strcmp()\", "
-						"\"strsub_fn\": \"strsub()\", "
-						"\"strstr_fn\": \"strstr()\""
-					"}"
-				);
-			UNITTEST_EQUALS((String("") + "1234567890").toString(),
-					"{"
-						"\"buffer\": \"1234567890\", "
-						"\"length\": \"10\", "
-						"\"size\": \"250\", "
-						"\"compare_fn\": \"strcmp()\", "
-						"\"strsub_fn\": \"strsub()\", "
-						"\"strstr_fn\": \"strstr()\""
-					"}"
-				);
-			UNITTEST_EQUALS(String("abc").toString(),
-					"{"
-						"\"buffer\": \"abc\", "
-						"\"length\": \"3\", "
-						"\"size\": \"3\", "
-						"\"compare_fn\": \"strcmp()\", "
-						"\"strsub_fn\": \"strsub()\", "
-						"\"strstr_fn\": \"strstr()\""
-					"}"
-				);
-			UNITTEST_EQUALS((String("abc") + "1234567890").toString(),
-					"{"
-						"\"buffer\": \"abc1234567890\", "
-						"\"length\": \"13\", "
-						"\"size\": \"13\", "
-						"\"compare_fn\": \"strcmp()\", "
-						"\"strsub_fn\": \"strsub()\", "
-						"\"strstr_fn\": \"strstr()\""
-					"}"
-				);
+			UNITTEST_EQUALS(String("").serialize(),
+					"{ \"String\": "
+						"{"
+							"\"buffer\": \"\", "
+							"\"length\": \"0\", "
+							"\"size\": \"250\", "
+							"\"compare_fn\": \"strcmp()\", "
+							"\"strsub_fn\": \"strsub()\", "
+							"\"strstr_fn\": \"strstr()\""
+						"}"
+					"}");
+			UNITTEST_EQUALS((String("") + "1234567890").serialize(),
+					"{ \"String\": "
+						"{"
+							"\"buffer\": \"1234567890\", "
+							"\"length\": \"10\", "
+							"\"size\": \"10\", "
+							"\"compare_fn\": \"strcmp()\", "
+							"\"strsub_fn\": \"strsub()\", "
+							"\"strstr_fn\": \"strstr()\""
+						"}"
+					"}");
+			UNITTEST_EQUALS(String("abc").serialize(),
+					"{ \"String\": "
+						"{"
+							"\"buffer\": \"abc\", "
+							"\"length\": \"3\", "
+							"\"size\": \"3\", "
+							"\"compare_fn\": \"strcmp()\", "
+							"\"strsub_fn\": \"strsub()\", "
+							"\"strstr_fn\": \"strstr()\""
+						"}"
+					"}");
+			UNITTEST_EQUALS((String("abc") + "1234567890").serialize(),
+					"{ \"String\": "
+						"{"
+							"\"buffer\": \"abc1234567890\", "
+							"\"length\": \"13\", "
+							"\"size\": \"13\", "
+							"\"compare_fn\": \"strcmp()\", "
+							"\"strsub_fn\": \"strsub()\", "
+							"\"strstr_fn\": \"strstr()\""
+						"}"
+					"}");
 		}
+			//---	String String::toString(void) const; ------------------------------------------------------------------
+				{
+					UNITTEST_EQUALS(String("").toString(), "");
+					UNITTEST_EQUALS((String("") + "1234567890").toString(), "1234567890");
+					UNITTEST_EQUALS(String("abc").toString(), "abc");
+					UNITTEST_EQUALS((String("abc") + "1234567890").toString(), "abc1234567890");
+				}
 
 	//---	String String::strip(void) const;
 		{
@@ -967,7 +984,7 @@
 			UNITTEST_ASSERT(string.contains("DEF"));
 			UNITTEST_ASSERT(string.contains("Def"));
 		}
-	//---	String *duplicate(void) const;
+	//---	String *clone(void) const;
 		{
 
 		}
@@ -1223,14 +1240,14 @@
 			UNITTEST_EQUALS(Token::wideCharToString('erp'), " erp");
 		}
 
-	//--- virtual const char* Token::getChars(void) const;
-		{
-			UNITTEST_EQUALS(Token('str', "\"this is a test\"").getChars(), "{\"type\": \"' str'\", \"text\": \"\"this is a test\"\", \"whitespace\": \"\"}");
-		}
-
 	//--- virtual String Token::toString(void) const;
 		{
-			UNITTEST_EQUALS(Token('str', "\"this is a test\"").toString(), "[' str': \"\"this is a test\"\", \"\"]");
+			UNITTEST_EQUALS(Token('str', "\"this is a test\"").toString(), "\"this is a test\"");
+		}
+
+	//--- virtual String Token::serialize(void) const;
+		{
+			UNITTEST_EQUALS(Token('str', "\"this is a test\"").serialize(), "{ \"Token\": {\"type\": \"' str'\", \"text\": \"\"this is a test\"\", \"whitespace\": \"\"}}");
 		}
 
 	//--- bool Token::operator<(const Token& token) const;
@@ -1259,7 +1276,7 @@
 	//--- friend std::ostream& Token::operator<<(std::ostream& ostream, const Token& token);
 		{	std::ostringstream output;
 			output << Token('word', "emergency", "//**/");
-			UNITTEST_EQUALS(output.str(), "['word': \"emergency\", \"//**/\"]");
+			UNITTEST_EQUALS(output.str(), "emergency");
 		}
 
 	}
@@ -1514,36 +1531,22 @@
 			UNITTEST_EQUALS(--stream2, 't');
 		}
 
-	//--- virtual const char* StringStream::getChars(void) const;
-		{	StringStream stream1("");
-			UNITTEST_EQUALS(stream1.getChars(), String(""));
-
-			StringStream stream2("testing");
-			UNITTEST_EQUALS(stream2.getChars(), String("testing"));
-			stream2.skip(3);
-			UNITTEST_EQUALS(stream2.getChars(), String("ting"));
-			stream2.skip(3);
-			UNITTEST_EQUALS(stream2.getChars(), String("g"));
-			stream2.skip(3);
-			UNITTEST_EQUALS(stream2.getChars(), String(""));
-		}
-
 	//--- virtual String StringStream::toString(void) const;
 		{	StringStream stream("");
-			UNITTEST_EQUALS(stream.toString(), "[position=0 stream=\"\"]");
+			UNITTEST_EQUALS(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 		}
 		{	StringStream stream("this is a test");
-			UNITTEST_EQUALS(stream.toString(), "[position=0 stream=\"this is a test\"]");
+			UNITTEST_EQUALS(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 			stream.next();
 			stream.next();
-			UNITTEST_EQUALS(stream.toString(), "[position=1 stream=\"this is a test\"]");
+			UNITTEST_EQUALS(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 		}
 	//--- friend std::ostream& StringStream::operator<<(std::ostream& stream, const StringStream& string)
 		{	std::ostringstream output;
 			String text("this is a test");
 			StringStream stream(text);
 			output << stream;
-			UNITTEST_EQUALS(output.str(), "[position=0 stream=\"this is a test\"]");
+			UNITTEST_EQUALS(output.str(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 		}
 	}
 
@@ -1812,19 +1815,24 @@
 			UNITTEST_EQUALS(stream.current(), Token('word', "abc"));
 		}
 
-	//---	const char* TokenStream::getChars(void) const; ------------------------------------------------------------------------
-		{	TokenStream stream("");
-			UNITTEST_EQUALS(stream.getChars(), String("TokenStream"));
-		}
-
 	//---	String TokenStream::toString(void) const; -----------------------------------------------------------------------------
 		{	TokenStream stream1("");
-			UNITTEST_EQUALS(stream1.toString(), "{\"current_token\": {\"type\": \"'NULL'\", \"text\": \"\", \"whitespace\": \"\"}\", \"stream\": \"{\"position\": \"0\", \"stream\": \"\"}}");
+			UNITTEST_PATTERN(stream1.toString(), "[[]TokenStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 			stream1.current();
-			UNITTEST_EQUALS(stream1.toString(), "[position=0 stream=\"\"]"); //"[' EOF': \"EOF\", \"\"]");
+			UNITTEST_PATTERN(stream1.toString(), "[[]TokenStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 			TokenStream stream2("abc");
 			stream2.current();
-			UNITTEST_EQUALS(stream2.toString(), "[position=3 stream=\"abc\"]"); //"['word': \"abc\", \"\"]");
+			UNITTEST_PATTERN(stream2.toString(), "[[]TokenStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
+		}
+
+	//---	String TokenStream::serialize(void) const; -----------------------------------------------------------------------------
+		{	TokenStream stream1("");
+			UNITTEST_EQUALS(stream1.serialize(), "{ \"TokenStream\": {\"current_token\": { \"Token\": {\"type\": \"'NULL'\", \"text\": \"\", \"whitespace\": \"\"}}, \"stream\": { \"StringStream\": { \"position\": \"0\", \"bookmark\": \"0\" } }}}");
+			stream1.current();
+			UNITTEST_EQUALS(stream1.serialize(), "{ \"TokenStream\": {\"current_token\": { \"Token\": {\"type\": \"' EOF'\", \"text\": \"EOF\", \"whitespace\": \"\"}}, \"stream\": { \"StringStream\": { \"position\": \"0\", \"bookmark\": \"0\" } }}}");
+			TokenStream stream2("abc");
+			stream2.current();
+			UNITTEST_EQUALS(stream2.serialize(), "{ \"TokenStream\": {\"current_token\": { \"Token\": {\"type\": \"'word'\", \"text\": \"abc\", \"whitespace\": \"\"}}, \"stream\": { \"StringStream\": { \"position\": \"3\", \"bookmark\": \"0\" } }}}");
 		}
 
 	//---	void TokenStream::mustBe(std::set<Token> tokens); ---------------------------------------------------------------------
@@ -2251,23 +2259,19 @@
 			delete xml_stream;
 		}
 
-	//---			virtual String XmlTokenStream::toString(void) const override;
+	//---	virtual String XmlTokenStream::serialize(void) const override;
 		{
-			UNITTEST_EQUALS(XmlTokenStream(xml_tests).toString().escape_ize(),
+			UNITTEST_EQUALS(XmlTokenStream(xml_tests).serialize(),
 					"{ "
 						"current_token={'NULL': \"\", \"\"}\","
-						"stream=\"[position=0, " + xml_tests.escape_ize() + "\" }");
+						"stream=\"[position=0, " + xml_tests + "\" }");
 		}
-//		[ current_token=['NULL': "", ""]" stream="[position=0, <person id="1">\n\t<first>name</first>\n\t<last>surname</last>\n\t<address>\n\t\t<street attrib="tests" attrib1="tests1" attrib2="tests2">20 Evergreen Rd.</street>\n\t\t<city>Vernon</city>\n\t\t<state>Connecticut, USA</state>\n\t\t<phone type="touchtone" network="POTS"/>\n\t</address>\n</person>" ]]
-//		[ current_token=['NULL': "", ""]" stream="[position=0 stream="<person id="1">\n\t<first>name</first>\n\t<last>surname</last>\n\t<address>\n\t\t<street attrib="tests" attrib1="tests1" attrib2="tests2">20 Evergreen Rd.</street>\n\t\t<city>Vernon</city>\n\t\t<state>Connecticut, USA</state>\n\t\t<phone type="touchtone" network="POTS"/>\n\t</address>\n</person>"]"]
+	//---	virtual String XmlTokenStream::toString(void) const override;
+		{
+			UNITTEST_PATTERN(XmlTokenStream(xml_tests).toString(), "[[]XmlTokenStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
+		}
 	//--- friend 	std::ostream& operator<<(std::ostream& stream, const XmlTokenStream& tokens);
 		{
-//			while ( !stream.isEOF() ) {
-//				stream.next();
-//				output << stream.current().text;
-//			}
-//			UNITTEST_EQUALS(output.str(), xml_tests);
-			UNITTEST_EQUALS(XmlTokenStream(xml_tests).toString().escape_ize(), "[position=0, " + xml_tests.escape_ize() + "\" ]");
 		}
 	}
 

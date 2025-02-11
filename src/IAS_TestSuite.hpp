@@ -34,6 +34,13 @@
 			IAS_unittest_equals(usecase_file, usecase_method, usecase_lineno, #OUTPUT_TO_TEST, #EXPECTED, OUTPUT_TO_TEST, EXPECTED); \
 		}
 
+	#define UNITTEST_PATTERN(OUTPUT_TO_TEST, PATTERN) { \
+			const char *usecase_file = __FILE__; \
+			const char *usecase_method = __FUNCTION__; \
+			uint usecase_lineno = __LINE__; \
+			IAS_unittest_pattern(usecase_file, usecase_method, usecase_lineno, #OUTPUT_TO_TEST, #PATTERN, OUTPUT_TO_TEST, PATTERN); \
+		}
+
 	#define PROTECT(...) \
 		{\
 			pid_t pid; \
@@ -49,5 +56,6 @@ void IAS_pass(const char *src_filename, const char *method, uint lineno);
 void IAS_fail(const char *src_filename, const char *method, uint lineno, const String& msg);
 void IAS_unittest_assert(const char *src_filename, const char *method, uint lineno, const char *str_to_test, const auto to_test);
 void IAS_unittest_equals(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, const auto output_to_test, const auto expected);
+void IAS_unittest_pattern(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, const String& output_to_test, const char* regex_text);
 
 #endif
