@@ -29,63 +29,6 @@ static String autoToString(auto var) {
 			<< std::endl
 			<< std::flush;
 	}
-	void IAS_unittest_assert(const char *src_filename, const char *method, uint lineno, const char *str_to_test, const auto to_test) {
-		test_number++;
-
-		if ( to_test ) {
-			tests_that_passed++;
-			std::cout << std::flush
-				<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
-	//			<< "expression: " << (strchr(to_test, '\n')? '\n': ' ') << to_test << "... PASSED."
-				<< str_to_test << "... PASSED."
-				<< std::endl
-				<< std::flush;
-
-		} else {
-			tests_that_failed++;
-			std::cerr << std::flush
-				<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
-				<< "expression: "
-				<< AsciiVT200::redForeground
-				<< (strchr(str_to_test, '\n')? ":\n": " ") << "... "
-				<< str_to_test << "... FAILED."
-				<< AsciiVT200::resetTerminal
-				<< std::endl
-				<< std::flush;
-		}
-	}
-
-	void IAS_unittest_equals(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, const auto output_to_test, const auto expected) {
-		test_number++;
-
-		String out__str = autoToString(output_to_test);
-		String exp__str = autoToString(expected);
-
-		if ( output_to_test == expected ) {
-			tests_that_passed++;
-			std::cout << std::flush
-				<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
-				<< "expression: " << (strchr(out__str.getChars(), '\n')? '\n': ' ') << output_to_test << "... PASSED.";
-			std::cout
-				<< std::endl
-				<< std::flush;
-
-		} else {
-			tests_that_failed++;
-			std::cerr << std::flush
-				<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
-				<< "expression: " << (strchr(str_output_to_test, '\n')? ":\n": " ") << str_output_to_test << "... "
-				<< AsciiVT200::redForeground << "FAILED: " << AsciiVT200::resetTerminal
-				<< "expected: ["
-				<< AsciiVT200::redForeground << (strchr(exp__str.escape_ize().getChars(), '\n')? "\n": "") << expected << AsciiVT200::resetTerminal
-				<< "] but got: ["
-				<< AsciiVT200::redForeground << (strchr(out__str.escape_ize().getChars(), '\n')? "\n": "") << output_to_test << AsciiVT200::resetTerminal
-				<< "]";
-			std::cout
-				<< std::endl
-				<< std::flush;
-		}
-	}
 
 	void IAS_unittest_pattern(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, const String& output_to_test, const char* regex_text) {
 		test_number++;
@@ -95,11 +38,12 @@ static String autoToString(auto var) {
 
 		if ( regcomp(&regex_exec, regex_text, REG_NEWLINE) == 0 ) {
 
-			if ( regexec(&regex_exec, output_to_test.getChars(), 1, pmatch, 0) != 0 ) {
+			if ( regexec(&regex_exec, output_to_test.getChars(), 1, pmatch, 0) == 0 ) {
 				tests_that_passed++;
 				std::cout << std::flush
 					<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
-					<< "expression: " << (strchr(output_to_test.getChars(), '\n')? '\n': ' ') << output_to_test << "... PASSED.";
+//					<< "expression: " << (strchr(output_to_test.escape_ize().getChars(), '\n')? '\n': ' ') << output_to_test << "... PASSED.";
+					<< "expression: " << output_to_test.escape_ize() << "... PASSED.";
 				std::cout
 					<< std::endl
 					<< std::flush;
@@ -119,6 +63,7 @@ static String autoToString(auto var) {
 					<< std::endl
 					<< std::flush;
 			}
+
 		} else {
 			//TODO
 		}

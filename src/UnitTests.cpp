@@ -21,6 +21,12 @@
 #include "IAS_TestSuite.hpp"
 #include "UnitTests.hpp"
 
+	String autoToString(auto var) {
+		std::ostringstream output;
+		output << var;
+		return output.str();
+	}
+
 	void IAS_unittest_assert(const char *src_filename, const char *method, uint lineno, const char *str_to_test, const auto to_test) {
 		test_number++;
 
@@ -28,6 +34,7 @@
 			tests_that_passed++;
 			std::cout << std::flush
 				<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
+	//			<< "expression: " << (strchr(to_test, '\n')? '\n': ' ') << to_test << "... PASSED."
 				<< str_to_test << "... PASSED."
 				<< std::endl
 				<< std::flush;
@@ -39,30 +46,28 @@
 				<< "expression: "
 				<< AsciiVT200::redForeground
 				<< (strchr(str_to_test, '\n')? ":\n": " ") << "... "
-				<< str_to_test << "... FAILED."
 				<< AsciiVT200::resetTerminal
+				<< str_to_test << "... FAILED."
 				<< std::endl
 				<< std::flush;
 		}
-	}
-
-	String autoToString(auto var) {
-		std::ostringstream output;
-		output << var;
-		return output.str();
 	}
 
 	void IAS_unittest_equals(const char *src_filename, const char *method, uint lineno, const char *str_output_to_test, const char *str_expected, const auto output_to_test, const auto expected) {
 		test_number++;
 
 		String out__str = autoToString(output_to_test);
-		String exp__str = autoToString(output_to_test);
+		const char *out__flow = (strchr(out__str.getChars(), '\n')? "\n": "");
+		String exp__str = autoToString(expected);
+		const char *exp__flow = (strchr(exp__str.getChars(), '\n')? "\n": "");
 
 		if ( output_to_test == expected ) {
 			tests_that_passed++;
 			std::cout << std::flush
 				<< "Test #" << test_number << " ["	<< src_filename << ":" << method << ":" << lineno << "]: "
-				<< "expression: " << (strchr(out__str.getChars(), '\n')? '\n': ' ') << output_to_test << "... PASSED.";
+				<< "expression: " << AsciiVT200::greenForeground << out__flow << out__str << AsciiVT200::resetTerminal
+				<< "... PASSED.";
+//				<< "expression: " << out__str.escape_ize() << "... PASSED.";
 			std::cout
 				<< std::endl
 				<< std::flush;
@@ -74,9 +79,11 @@
 				<< "expression: " << (strchr(str_output_to_test, '\n')? ":\n": " ") << str_output_to_test << "... "
 				<< AsciiVT200::redForeground << "FAILED: " << AsciiVT200::resetTerminal
 				<< "expected: ["
-				<< AsciiVT200::redForeground << (strchr(exp__str.escape_ize().getChars(), '\n')? "\n": "") << expected << AsciiVT200::resetTerminal
-				<< "] but got: ["
-				<< AsciiVT200::redForeground << (strchr(out__str.escape_ize().getChars(), '\n')? "\n": "") << output_to_test << AsciiVT200::resetTerminal
+				<< AsciiVT200::redForeground << exp__flow << exp__str << AsciiVT200::resetTerminal
+//				<< AsciiVT200::redForeground << expected << AsciiVT200::resetTerminal
+				<< out__flow << "] but got: [" << out__flow
+				<< AsciiVT200::redForeground << out__flow << out__str << AsciiVT200::resetTerminal
+//				<< AsciiVT200::redForeground << out__str << AsciiVT200::resetTerminal
 				<< "]";
 			std::cout
 				<< std::endl
@@ -1247,7 +1254,7 @@
 
 	//--- virtual String Token::serialize(void) const;
 		{
-			UNITTEST_EQUALS(Token('str', "\"this is a test\"").serialize(), "{ \"Token\": {\"type\": \"' str'\", \"text\": \"\"this is a test\"\", \"whitespace\": \"\"}}");
+			UNITTEST_EQUALS(Token('str', "\"this is a test\"").serialize(), "{\"Token\": {\"type\": \"' str'\", \"text\": \"\"this is a test\"\", \"whitespace\": \"\"}}");
 		}
 
 	//--- bool Token::operator<(const Token& token) const;
@@ -1533,20 +1540,20 @@
 
 	//--- virtual String StringStream::toString(void) const;
 		{	StringStream stream("");
-			UNITTEST_EQUALS(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
+			UNITTEST_PATTERN(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 		}
 		{	StringStream stream("this is a test");
-			UNITTEST_EQUALS(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
+			UNITTEST_PATTERN(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 			stream.next();
 			stream.next();
-			UNITTEST_EQUALS(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
+			UNITTEST_PATTERN(stream.toString(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 		}
 	//--- friend std::ostream& StringStream::operator<<(std::ostream& stream, const StringStream& string)
 		{	std::ostringstream output;
 			String text("this is a test");
 			StringStream stream(text);
 			output << stream;
-			UNITTEST_EQUALS(output.str(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
+			UNITTEST_PATTERN(output.str(), "[[]StringStream: [0-9A-Fa-f][0-9A-Fa-f]*[]]");
 		}
 	}
 
@@ -1827,12 +1834,67 @@
 
 	//---	String TokenStream::serialize(void) const; -----------------------------------------------------------------------------
 		{	TokenStream stream1("");
-			UNITTEST_EQUALS(stream1.serialize(), "{ \"TokenStream\": {\"current_token\": { \"Token\": {\"type\": \"'NULL'\", \"text\": \"\", \"whitespace\": \"\"}}, \"stream\": { \"StringStream\": { \"position\": \"0\", \"bookmark\": \"0\" } }}}");
+
+			UNITTEST_EQUALS(stream1.serialize(),
+					"{"
+						"\"TokenStream\": {"
+							"\"current_token\": {"
+								"\"Token\": {"
+									"\"type\": \"'NULL'\", "
+									"\"text\": \"\", "
+									"\"whitespace\": \"\""
+								"}"
+							"}, "
+							"\"stream\": {"
+								"\"StringStream\": {"
+									"\"position\": \"0\", "
+									"\"bookmark\": \"0\", "
+									"\"string\": \"\""
+								"}"
+							"}"
+						"}"
+					"}");
 			stream1.current();
-			UNITTEST_EQUALS(stream1.serialize(), "{ \"TokenStream\": {\"current_token\": { \"Token\": {\"type\": \"' EOF'\", \"text\": \"EOF\", \"whitespace\": \"\"}}, \"stream\": { \"StringStream\": { \"position\": \"0\", \"bookmark\": \"0\" } }}}");
+			UNITTEST_EQUALS(stream1.serialize(),
+					"{"
+						"\"TokenStream\": {"
+							"\"current_token\": {"
+								"\"Token\": {"
+									"\"type\": \"' EOF'\", "
+									"\"text\": \"EOF\", "
+									"\"whitespace\": \"\""
+								"}"
+							"}, "
+							"\"stream\": {"
+								"\"StringStream\": {"
+									"\"position\": \"0\", "
+									"\"bookmark\": \"0\", "
+									"\"string\": \"\""
+								"}"
+							"}"
+						"}"
+					"}");
 			TokenStream stream2("abc");
 			stream2.current();
-			UNITTEST_EQUALS(stream2.serialize(), "{ \"TokenStream\": {\"current_token\": { \"Token\": {\"type\": \"'word'\", \"text\": \"abc\", \"whitespace\": \"\"}}, \"stream\": { \"StringStream\": { \"position\": \"3\", \"bookmark\": \"0\" } }}}");
+			UNITTEST_EQUALS(stream2.serialize(),
+					"{"
+						"\"TokenStream\": {"
+							"\"current_token\": {"
+								"\"Token\": {"
+									"\"type\": \"'word'\", "
+									"\"text\": \"abc\", "
+									"\"whitespace\": \"\""
+								"}"
+							"}, "
+							"\"stream\": {"
+								"\"StringStream\": {"
+									"\"position\": \"3\", "
+									"\"bookmark\": \"0\", "
+									"\"string\": \"abc\""
+								"}"
+							"}"
+						"}"
+					"}");
 		}
 
 	//---	void TokenStream::mustBe(std::set<Token> tokens); ---------------------------------------------------------------------
@@ -2162,7 +2224,7 @@
 		{	cchar *text =	"	Token TokenStream::scoopNumber(const String& spaces) {\n"
 							"		TokenType type = TokenType::eEOF;\n"
 							"		TextAccumulator acc;\n"
-							"		if ( stream->current() != EOF ) {\n"
+							"		if ( stream->current() != EOF ) { // <-- read until an EOF\n"
 							"			while ( isdigit(stream->current()) ) {\n"
 							"				acc += stream->current();\n"
 							"				stream->next();\n"
@@ -2262,9 +2324,36 @@
 	//---	virtual String XmlTokenStream::serialize(void) const override;
 		{
 			UNITTEST_EQUALS(XmlTokenStream(xml_tests).serialize(),
-					"{ "
-						"current_token={'NULL': \"\", \"\"}\","
-						"stream=\"[position=0, " + xml_tests + "\" }");
+					"{"
+						"\"XmlTokenStream\": {"
+							"\"TokenStream\": {"
+								"\"current_token\": {"
+									"\"Token\": {"
+										"\"type\": \"'NULL'\", "
+										"\"text\": \"\", "
+										"\"whitespace\": \"\""
+									"}"
+								"}, "
+								"\"stream\": {"
+									"\"StringStream\": {"
+										"\"position\": \"0\", "
+										"\"bookmark\": \"0\", "
+										"\"string\": "
+											"\"<person id=\"1\">\n"
+											"	<first>name</first>\n"
+											"	<last>surname</last>\n"
+											"	<address>\n"
+											"		<street attrib=\"tests\" attrib1=\"tests1\" attrib2=\"tests2\">20 Evergreen Rd.</street>\n"
+											"		<city>Vernon</city>\n"
+											"		<state>Connecticut, USA</state>\n"
+											"		<phone type=\"touchtone\" network=\"POTS\"/>\n"
+											"	</address>\n"
+											"</person>\""
+									"}"
+								"}"
+							"}"
+						"}"
+					"}");
 		}
 	//---	virtual String XmlTokenStream::toString(void) const override;
 		{

@@ -108,7 +108,7 @@
 	}
 
 	String TokenStream::serialize(void) const {
-		return	"{ \"TokenStream\": "
+		return	"{\"TokenStream\": "
 					"{"
 						"\"current_token\": " + current_token.serialize() + ", "
 						"\"stream\": " + stream->serialize() +

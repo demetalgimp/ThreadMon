@@ -31,7 +31,7 @@
 /*??*/		virtual Klass *clone(void) const override		{ return new XmlTokenStream(*this); }
 /*??*/		virtual String toString(void) const override	{ return String::formatString("[XmlTokenStream: %llX]", this); }
 /*??*/		virtual String serialize(void) const override {
-				return "{ \"XmlTokenStream\": " + TokenStream::serialize() + " }";
+				return "{\"XmlTokenStream\": " + TokenStream::serialize() + "}";
 			}
 
 		public:

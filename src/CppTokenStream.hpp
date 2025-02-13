@@ -29,7 +29,7 @@
 /*tested*/	virtual Token  next(void) override;
 
 		public: //--- Klass overrides
-/*??*/		virtual String serialize(void) const override		{ return "{ \"CppTokenStream\": " + TokenStream::serialize() + " }"; }
+/*??*/		virtual String serialize(void) const override		{ return "{\"CppTokenStream\": " + TokenStream::serialize() + "}"; }
 			virtual String toString(void) const override		{ return String::formatString("[CppTokenStream: %llX", this); }
 	};
 

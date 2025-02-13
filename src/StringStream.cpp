@@ -64,11 +64,12 @@
 	}
 
 	String StringStream::serialize(void) const	{
-		return String("{ ") +
+		return String("{") +
 				"\"StringStream\": "
-					"{ "
+					"{"
 						"\"position\": \"" + position + "\", "
-						"\"bookmark\": \"" + bookmark + "\""
-					" }"
-				" }";
+						"\"bookmark\": \"" + bookmark + "\", "
+						"\"string\": \"" + string + "\""
+					"}"
+				"}";
 	}

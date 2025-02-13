@@ -53,12 +53,12 @@
 		return buffer;
 	}
 	String TextAccumulator::serialize(void) const {
-		return String::formatString("{ "
-				"\"TextAccumulator\": { "
+		return String::formatString("{"
+				"\"TextAccumulator\": {"
 					"\"current_size\": \"%d\", "
 					"\"buffer\": \"%s\", "
-					"\"position\": \"%d\" "
-				"} "
+					"\"position\": \"%d\""
+				"}"
 			"}", current_size, String(buffer).escape_ize().getChars(), position);
 	}
 

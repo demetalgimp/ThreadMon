@@ -81,7 +81,7 @@
 		public: // Overrides
 /*??*/		virtual Token *clone(void) const override		{ return new Token(*this); }
 /*tested*/	virtual String serialize(void) const override {
-				return 	"{ \"Token\": "
+				return 	"{\"Token\": "
 							"{"
 								"\"type\": \"'" + wideCharToString(type) + "'\", "
 								"\"text\": \"" + text + "\", "
